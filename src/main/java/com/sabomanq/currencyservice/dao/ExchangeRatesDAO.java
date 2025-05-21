@@ -1,0 +1,188 @@
+package com.sabomanq.currencyservice.dao;
+
+import com.sabomanq.currencyservice.model.entity.Currency;
+import com.sabomanq.currencyservice.model.entity.ExchangeRate;
+import com.sabomanq.currencyservice.model.entity.ExchangeRateInfo;
+
+import java.math.BigDecimal;
+import java.sql.*;
+import java.util.ArrayList;
+
+public class ExchangeRatesDAO {
+    private ConnectionProvider connectionProvider;
+
+    public ExchangeRatesDAO(ConnectionProvider connectionProvider) {
+        this.connectionProvider = connectionProvider;
+    }
+
+    public ArrayList<ExchangeRateInfo> getExchangeRates() {
+        System.out.println("get all exchange rates");
+
+        String query =
+                "SELECT \n" +
+                "    er.id,\n" +
+                "    er.rate,\n" +
+                "    \n" +
+                "    bc.id AS baseId,\n" +
+                "    bc.code AS baseCode,\n" +
+                "    bc.fullName AS basefullName,\n" +
+                "    bc.sign AS baseSign,\n" +
+                "    \n" +
+                "    tc.id AS targetId,\n" +
+                "    tc.code AS targetCode,\n" +
+                "    tc.fullName AS targetfullName,\n" +
+                "    tc.sign AS targetSign\n" +
+                "\n" +
+                "FROM ExchangeRates er\n" +
+                "JOIN Currencies bc ON er.baseCurrencyId = bc.id\n" +
+                "JOIN Currencies tc ON er.targetCurrencyId = tc.id;";
+
+        try (Connection conn = connectionProvider.open()) {
+            Statement stmt = conn.createStatement();
+            ResultSet rs = stmt.executeQuery(query);
+            ArrayList<ExchangeRateInfo> exchangeRates = new ArrayList<>();
+            while (rs.next())
+            {
+                int id = rs.getInt("id");
+                float rate = rs.getFloat("rate");
+                int baseId = rs.getInt("baseId");
+                String baseName = rs.getString("basefullName");
+                String baseCode = rs.getString("baseCode");
+                String baseSign = rs.getString("baseSign");
+
+                int targetId = rs.getInt("targetId");
+                String targetCode = rs.getString("targetCode");
+                String targetFullName = rs.getString("targetfullName");
+                String targetSign = rs.getString("targetSign");
+                System.out.println(rs.getString("id"));
+                Currency base = new Currency(baseId, baseCode, baseName, baseSign);
+                Currency target = new Currency(targetId, targetCode, targetFullName, targetSign);
+
+                exchangeRates.add(new ExchangeRateInfo(id, base, target, rate));
+            }
+
+            return exchangeRates;
+        }
+        catch (SQLException e)
+        {
+            e.printStackTrace();
+        }
+
+        return null;
+    }
+
+    public ExchangeRateInfo getExchangeRate(String pair) {
+        System.out.println("get exchange rate");
+        String query = "SELECT \n" +
+                "    er.id,\n" +
+                "    er.rate,\n" +
+                "    \n" +
+                "    bc.id AS baseId,\n" +
+                "    bc.code AS baseCode,\n" +
+                "    bc.fullName AS basefullName,\n" +
+                "    bc.sign AS baseSign,\n" +
+                "    \n" +
+                "    tc.id AS targetId,\n" +
+                "    tc.code AS targetCode,\n" +
+                "    tc.fullName AS targetfullName,\n" +
+                "    tc.sign AS targetSign\n" +
+                "\n" +
+                "FROM ExchangeRates er\n" +
+                "JOIN Currencies bc ON er.baseCurrencyId = bc.id\n" +
+                "JOIN Currencies tc ON er.targetCurrencyId = tc.id\n" +
+                "WHERE (bc.code || tc.code) = ?";
+
+        try (Connection conn = connectionProvider.open()) {
+            PreparedStatement stmt = conn.prepareStatement(query);
+            stmt.setString(1, pair);
+            ResultSet rs = stmt.executeQuery();
+            if (rs.next())
+            {
+                int id = rs.getInt("id");
+                float rate = rs.getFloat("rate");
+                int baseId = rs.getInt("baseId");
+                String baseName = rs.getString("basefullName");
+                String baseCode = rs.getString("baseCode");
+                String baseSign = rs.getString("baseSign");
+
+                int targetId = rs.getInt("targetId");
+                String targetCode = rs.getString("targetCode");
+                String targetFullName = rs.getString("targetfullName");
+                String targetSign = rs.getString("targetSign");
+                System.out.println(rs.getString("id"));
+                Currency base = new Currency(baseId, baseCode, baseName, baseSign);
+                Currency target = new Currency(targetId, targetCode, targetFullName, targetSign);
+                return new ExchangeRateInfo(id, base, target, rate);
+            }
+        }
+        catch (SQLException e)
+        {
+            e.printStackTrace();
+        }
+        return null;
+    }
+
+    public ExchangeRateInfo addRate(String baseCode, String targetCode, float rate) {
+        System.out.println("add rate");
+
+        String query = "INSERT INTO ExchangeRates (baseCurrencyId, targetCurrencyId, rate)\n" +
+                "SELECT c1.id, c2.id, ?\n" +
+                "FROM Currencies c1\n" +
+                "JOIN Currencies c2 ON 1 = 1\n" +
+                "WHERE c1.code = ? AND c2.code = ?";
+        try (Connection conn = connectionProvider.open()) {
+            PreparedStatement stmt = conn.prepareStatement(query);
+            stmt.setBigDecimal(1, new BigDecimal(rate));
+            stmt.setString(2, baseCode);
+            stmt.setString(3, targetCode);
+            int count = stmt.executeUpdate();
+            if (count != 1)
+            {
+                return null;
+            }
+            else {
+                return getExchangeRate(baseCode + targetCode);
+            }
+        }
+        catch (SQLException e)
+        {
+            e.printStackTrace();
+        }
+
+        return null;
+    }
+
+    public ExchangeRateInfo patchRate(String baseCode, String targetCode, float rate) {
+        System.out.println("patch rate");
+
+        String query = "UPDATE ExchangeRates\n" +
+                "SET rate = ?\n" +
+                "WHERE baseCurrencyId = (\n" +
+                "    SELECT id FROM Currencies WHERE code = ?\n" +
+                ")\n" +
+                "AND targetCurrencyId = (\n" +
+                "    SELECT id FROM Currencies WHERE code = ?\n" +
+                ");";
+
+        try (Connection conn = connectionProvider.open()) {
+            PreparedStatement stmt = conn.prepareStatement(query);
+            stmt.setBigDecimal(1, new BigDecimal(rate));
+            stmt.setString(2, baseCode);
+            stmt.setString(3, targetCode);
+            int count = stmt.executeUpdate();
+            if (count != 1)
+            {
+                return null;
+            }
+            else {
+                return getExchangeRate(baseCode + targetCode);
+            }
+        }
+        catch (SQLException e)
+        {
+            e.printStackTrace();
+        }
+
+        return null;
+    }
+}
