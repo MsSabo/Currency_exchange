@@ -1,9 +1,8 @@
 package com.sabomanq.currencyservice.http;
 
-import com.sabomanq.currencyservice.dao.CurrencyDb;
-import com.sabomanq.currencyservice.dao.SqliteProvider;
-import com.sabomanq.currencyservice.dao.UniqueConstraintViolationException;
+import com.sabomanq.currencyservice.dao.*;
 import com.sabomanq.currencyservice.model.dto.CurrencyDTO;
+import com.sabomanq.currencyservice.model.dto.Error;
 import com.sabomanq.currencyservice.model.form.CurrencyForm;
 import com.sabomanq.currencyservice.model.Parsing;
 import com.sabomanq.currencyservice.service.Currencies;
@@ -12,6 +11,7 @@ import flexjson.JSONSerializer;
 import java.io.*;
 import javax.servlet.http.*;
 import javax.servlet.annotation.*;
+import javax.xml.crypto.Data;
 
 @WebServlet(value = "/currencies/*")
 public class CurrenciesServlet extends HttpServlet {
@@ -24,30 +24,20 @@ public class CurrenciesServlet extends HttpServlet {
 
     @Override
     public void doGet(HttpServletRequest request, HttpServletResponse response) throws IOException {
-        String pathInfo = request.getPathInfo(); // вернёт "/USD"
         Object result;
         try {
-            if (pathInfo == null || pathInfo.equals("/")) {
-                result = currencies.getAllCurrencies();
-            } else {
-                String currencyCode = pathInfo.substring(1); // удаляем начальный "/"
-                System.out.println("Currency Code: " + currencyCode);
-                result = currencies.getCurrency(currencyCode);
-            }
-        }
-        catch (UniqueConstraintViolationException e) {
-            System.out.println("Unique conflict " + e.getMessage());
-            response.setStatus(HttpServletResponse.SC_CONFLICT);
-            return;
+            result = currencies.getAllCurrencies();
+            response.setStatus(HttpServletResponse.SC_OK);
+            Util.printToJs(result, response);
+        } catch (DatabaseError e) {
+            System.out.println("Unique conflict " + e.getMessage() + " " + e.getCause());
+            response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
+            Util.printToJs(new Error("Internal error"), response);
+        } catch (IOException err) {
+            response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
+            Util.printToJs(new Error("Internal error"), response);
         }
 
-        JSONSerializer json = new JSONSerializer();
-        response.setContentType("application/json");
-        response.setCharacterEncoding("UTF-8");
-        PrintWriter out = response.getWriter();
-        String jsRes =  json.exclude("*.class").serialize(result);;
-        out.println(jsRes);
-        out.flush();
     }
 
     @Override
@@ -55,17 +45,18 @@ public class CurrenciesServlet extends HttpServlet {
         try {
             CurrencyForm data = Parsing.getPostCurrency(request);
             CurrencyDTO addedData = currencies.add(data);
-            JSONSerializer json = new JSONSerializer();
-            response.setContentType("application/json");
-            response.setCharacterEncoding("UTF-8");
             response.setStatus(HttpServletResponse.SC_CREATED);
-            PrintWriter out = response.getWriter();
-            String jsRes = json.exclude("*.class").serialize(addedData);
-            out.println(jsRes);
-            out.flush();
+            Util.printToJs(addedData, response);
         } catch (UniqueConstraintViolationException e) {
+            System.out.println("Unique conflict " + e.getMessage() + " " + e.getCause());
             response.setStatus(HttpServletResponse.SC_CONFLICT);
-            return;
+            Util.printToJs(new Error("Currency already exists."), response);
+        } catch (DatabaseError err) {
+            response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
+            Util.printToJs(new Error("Internal server error"), response);
+        } catch (IllegalArgumentException err) {
+            response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
+            Util.printToJs(new Error(err.getMessage()), response);
         }
     }
 }

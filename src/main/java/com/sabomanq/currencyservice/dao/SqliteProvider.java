@@ -17,7 +17,6 @@ public class SqliteProvider implements ConnectionProvider{
             e.printStackTrace();
         }
         System.out.println("Driver Registered!");
-        ///  @todo migrate db
         String url = "jdbc:sqlite:mydb.db";
 
         boolean migrate = false;
@@ -34,13 +33,14 @@ public class SqliteProvider implements ConnectionProvider{
             Flyway flyway = Flyway.configure().dataSource(url, "saba", "saba").load();
             flyway.migrate();
         }
-        Connection conn = null;
+
+        Connection conn;
         try {
             conn = DriverManager.getConnection(url, "saba", "saba");
             System.out.println("Connection to SQLite has been established. TUTUTU");
-        }
-        catch (Exception e) {
+        } catch (Exception e) {
             System.out.println("Error opening database.");
+            throw new SQLException("Error opening database.");
         }
 
         return conn;

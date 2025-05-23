@@ -1,7 +1,6 @@
 package com.sabomanq.currencyservice.dao;
 
 import com.sabomanq.currencyservice.model.entity.Currency;
-import com.sabomanq.currencyservice.model.form.CurrencyForm;
 import org.flywaydb.core.Flyway;
 
 import java.io.File;
@@ -17,7 +16,7 @@ public class CurrencyDb implements Database{
         this.connectionProvider = connectionProvider;
     }
 
-    public Currency getCurrency(String code) {
+    public Currency getCurrency(String code) throws DatabaseError, NotFoundException {
         System.out.println("get currency by code : " + code);
 
         String query = "SELECT * FROM Currencies WHERE CODE = ?";
@@ -34,16 +33,17 @@ public class CurrencyDb implements Database{
                 String cd = rs.getString("code");
                 String sign = rs.getString("sign");
                 return new Currency(id, cd, name, sign);
+            } else {
+                throw new NotFoundException("Currency with code " + code + " not found");
             }
         }
-        catch (Exception e) {
-            e.printStackTrace();
+        catch (SQLException e) {
+            System.out.println(e.getMessage());
+            throw new DatabaseError("Database internal error");
         }
-
-        return null;
     }
 
-    public List<Currency> getCurrencies() {
+    public List<Currency> getCurrencies() throws DatabaseError{
         System.out.println("getCurrencies called");
         List<Currency> currencies = new ArrayList<>();
         String query = "SELECT * FROM currencies";
@@ -67,13 +67,12 @@ public class CurrencyDb implements Database{
         catch (SQLException e)
         {
             e.printStackTrace();
+            throw new DatabaseError("Database internal error");
         }
-
-        return null;
     }
 
     @Override
-    public Currency addCurrency(Currency currency) {
+    public Currency addCurrency(Currency currency) throws UniqueConstraintViolationException, DatabaseError {
         System.out.println("addCurrency called");
         String query = "INSERT INTO currencies(fullName, code, sign) VALUES (?, ?, ?)";
 
@@ -107,6 +106,7 @@ public class CurrencyDb implements Database{
             if (e.getErrorCode() == 19) {
                 throw new UniqueConstraintViolationException(e.getMessage(), e.getCause());
             }
+            throw new DatabaseError("Database internal error");
         }
 
         return null;

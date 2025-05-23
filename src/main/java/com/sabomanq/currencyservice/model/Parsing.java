@@ -8,15 +8,16 @@ import java.util.Arrays;
 import java.util.Map;
 
 public class Parsing {
-    public static CurrencyForm getPostCurrency(HttpServletRequest req) {
+    public static CurrencyForm getPostCurrency(HttpServletRequest req) throws IllegalArgumentException {
         if (!isForm(req)) {
             throw new IllegalArgumentException("Invalid request");
         }
-        Map<String, String[]> map = req.getParameterMap();
 
-        for (Map.Entry<String, String[]> entry : map.entrySet()) {
-            System.out.println(entry.getKey() + ": " + Arrays.toString(entry.getValue()));
+        Map<String, String[]> map = req.getParameterMap();
+        if (!map.containsKey("name") || !map.containsKey("code") || !map.containsKey("sign"))  {
+            throw new IllegalArgumentException("Required form field is missing.");
         }
+
         String name = req.getParameter("name");
         String code = req.getParameter("code");
         String sign = req.getParameter("sign");
@@ -29,6 +30,11 @@ public class Parsing {
             throw new IllegalArgumentException("Invalid request");
         }
 
+        Map<String, String[]> map = req.getParameterMap();
+        if (!map.containsKey("baseCode") || !map.containsKey("targetCode") || !map.containsKey("rate"))  {
+            throw new IllegalArgumentException("Required form field is missing.");
+        }
+
         String baseCode = req.getParameter("baseCode");
         String targetCode = req.getParameter("targetCode");
         float rate = Float.parseFloat(req.getParameter("rate"));
@@ -37,10 +43,9 @@ public class Parsing {
     }
 
     private static boolean isForm(HttpServletRequest req) {
-        if (!req.getContentType().equals("application/x-www-form-urlencoded")) {
-            return false;
+        if (req.getContentType() != null && req.getContentType().equals("application/x-www-form-urlencoded")) {
+            return true;
         }
-
-        return true;
+        return false;
     }
 }

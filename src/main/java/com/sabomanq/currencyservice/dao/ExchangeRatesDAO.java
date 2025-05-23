@@ -1,7 +1,6 @@
 package com.sabomanq.currencyservice.dao;
 
 import com.sabomanq.currencyservice.model.entity.Currency;
-import com.sabomanq.currencyservice.model.entity.ExchangeRate;
 import com.sabomanq.currencyservice.model.entity.ExchangeRateInfo;
 
 import java.math.BigDecimal;
@@ -65,13 +64,12 @@ public class ExchangeRatesDAO {
         }
         catch (SQLException e)
         {
-            e.printStackTrace();
+           System.out.println(e.getMessage());
+           throw new DatabaseError("Internal database error");
         }
-
-        return null;
     }
 
-    public ExchangeRateInfo getExchangeRate(String pair) {
+    public ExchangeRateInfo getExchangeRate(String pair) throws DatabaseError, NotFoundException {
         System.out.println("get exchange rate");
         String query = "SELECT \n" +
                 "    er.id,\n" +
@@ -113,16 +111,18 @@ public class ExchangeRatesDAO {
                 Currency base = new Currency(baseId, baseCode, baseName, baseSign);
                 Currency target = new Currency(targetId, targetCode, targetFullName, targetSign);
                 return new ExchangeRateInfo(id, base, target, rate);
+            } else {
+                throw new NotFoundException("The exchange rate for the pair was not found.");
             }
         }
         catch (SQLException e)
         {
-            e.printStackTrace();
+            System.out.println("get exchange rate error");
+            throw new DatabaseError("Internal database error");
         }
-        return null;
     }
 
-    public ExchangeRateInfo addRate(String baseCode, String targetCode, float rate) {
+    public ExchangeRateInfo addRate(String baseCode, String targetCode, float rate) throws DatabaseError {
         System.out.println("add rate");
 
         String query = "INSERT INTO ExchangeRates (baseCurrencyId, targetCurrencyId, rate)\n" +
@@ -146,10 +146,13 @@ public class ExchangeRatesDAO {
         }
         catch (SQLException e)
         {
-            e.printStackTrace();
-        }
+            if (e.getErrorCode() == 19) {
+                throw new UniqueConstraintViolationException(e.getMessage(), e.getCause());
+            }
 
-        return null;
+            System.out.println("add rate error " + e.getMessage());
+            throw new DatabaseError("Internal database error");
+        }
     }
 
     public ExchangeRateInfo patchRate(String baseCode, String targetCode, float rate) {
