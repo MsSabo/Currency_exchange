@@ -47,10 +47,8 @@ public class ExchangeRateServlet extends HttpServlet {
 
     public void doPatch(HttpServletRequest request, HttpServletResponse response) throws IOException {
         try {
-            System.out.println("doPatch");
             String pathInfo = request.getPathInfo(); // вернёт "/USD"
             String exchangePair = pathInfo.substring(1); // удаляем начальный "/"
-            System.out.println("Exchange pair: " + exchangePair);
 
             ExchangeRateForm form = Parsing.getExchangeRateForm(request);
             Object result = rates.updateExchangeRate(exchangePair, form);

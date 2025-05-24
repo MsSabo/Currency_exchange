@@ -30,7 +30,6 @@ public class CurrenciesServlet extends HttpServlet {
             response.setStatus(HttpServletResponse.SC_OK);
             Util.printToJs(result, response);
         } catch (DatabaseError e) {
-            System.out.println("Unique conflict " + e.getMessage() + " " + e.getCause());
             response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
             Util.printToJs(new Error("Internal error"), response);
         } catch (IOException err) {
@@ -48,7 +47,6 @@ public class CurrenciesServlet extends HttpServlet {
             response.setStatus(HttpServletResponse.SC_CREATED);
             Util.printToJs(addedData, response);
         } catch (UniqueConstraintViolationException e) {
-            System.out.println("Unique conflict " + e.getMessage() + " " + e.getCause());
             response.setStatus(HttpServletResponse.SC_CONFLICT);
             Util.printToJs(new Error("Currency already exists."), response);
         } catch (DatabaseError err) {

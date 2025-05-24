@@ -28,7 +28,6 @@ public class CurrencyServlet extends HttpServlet {
         String pathInfo = request.getPathInfo(); // вернёт "/USD"
         try {
             String currencyCode = pathInfo.substring(1); // удаляем начальный "/"
-            System.out.println("Currency Code: " + currencyCode);
             if (currencyCode.isEmpty()) {
                 response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
                 Util.printToJs(new Error("Currency code is empty"), response);
@@ -41,13 +40,11 @@ public class CurrencyServlet extends HttpServlet {
         } catch (NotFoundException err) {
             response.setStatus(HttpServletResponse.SC_NOT_FOUND);
             Util.printToJs(new Error("Currency not found"), response);
-            System.out.println("Currency not found printed to response");
         } catch (DatabaseError err) {
             response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
             Util.printToJs(new Error("Internal error"), response);
         } catch (IOException e) {
             response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
-            System.out.println(e.getMessage());
             Util.printToJs(new Error("Internal error"), response);
         }
     }
