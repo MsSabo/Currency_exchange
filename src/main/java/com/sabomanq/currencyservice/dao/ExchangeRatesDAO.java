@@ -53,7 +53,6 @@ public class ExchangeRatesDAO {
                 String targetCode = rs.getString("targetCode");
                 String targetFullName = rs.getString("targetfullName");
                 String targetSign = rs.getString("targetSign");
-                System.out.println(rs.getString("id"));
                 Currency base = new Currency(baseId, baseCode, baseName, baseSign);
                 Currency target = new Currency(targetId, targetCode, targetFullName, targetSign);
 
@@ -107,7 +106,6 @@ public class ExchangeRatesDAO {
                 String targetCode = rs.getString("targetCode");
                 String targetFullName = rs.getString("targetfullName");
                 String targetSign = rs.getString("targetSign");
-                System.out.println(rs.getString("id"));
                 Currency base = new Currency(baseId, baseCode, baseName, baseSign);
                 Currency target = new Currency(targetId, targetCode, targetFullName, targetSign);
                 return new ExchangeRateInfo(id, base, target, rate);
@@ -155,37 +153,35 @@ public class ExchangeRatesDAO {
         }
     }
 
-    public ExchangeRateInfo patchRate(String baseCode, String targetCode, float rate) {
+    public ExchangeRateInfo patchRate(String pair, float rate) throws NotFoundException, DatabaseError {
         System.out.println("patch rate");
 
         String query = "UPDATE ExchangeRates\n" +
                 "SET rate = ?\n" +
-                "WHERE baseCurrencyId = (\n" +
-                "    SELECT id FROM Currencies WHERE code = ?\n" +
-                ")\n" +
-                "AND targetCurrencyId = (\n" +
-                "    SELECT id FROM Currencies WHERE code = ?\n" +
+                "WHERE id IN (\n" +
+                "    SELECT rates.id\n" +
+                "    FROM ExchangeRates AS rates\n" +
+                "    JOIN Currencies AS c1 ON rates.baseCurrencyId = c1.id\n" +
+                "    JOIN Currencies AS c2 ON rates.targetCurrencyId = c2.id\n" +
+                "    WHERE c1.code || c2.code = ?\n" +
                 ");";
 
         try (Connection conn = connectionProvider.open()) {
             PreparedStatement stmt = conn.prepareStatement(query);
             stmt.setBigDecimal(1, new BigDecimal(rate));
-            stmt.setString(2, baseCode);
-            stmt.setString(3, targetCode);
+            stmt.setString(2, pair);
             int count = stmt.executeUpdate();
             if (count != 1)
             {
-                return null;
+                throw new NotFoundException("The exchange rate for the pair was not found.");
             }
             else {
-                return getExchangeRate(baseCode + targetCode);
+                return getExchangeRate(pair);
             }
         }
-        catch (SQLException e)
+        catch (SQLException err)
         {
-            e.printStackTrace();
+            throw new DatabaseError("Internal database error");
         }
-
-        return null;
     }
 }

@@ -2,9 +2,12 @@ package com.sabomanq.currencyservice.model;
 
 import com.sabomanq.currencyservice.model.form.CurrencyForm;
 import com.sabomanq.currencyservice.model.form.ExchangeListForm;
+import com.sabomanq.currencyservice.model.form.ExchangeRateForm;
 
 import javax.servlet.http.HttpServletRequest;
-import java.util.Arrays;
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.util.HashMap;
 import java.util.Map;
 
 public class Parsing {
@@ -25,7 +28,29 @@ public class Parsing {
         return new CurrencyForm(code, name, sign);
     }
 
-    public static ExchangeListForm getExchangePost(HttpServletRequest req) {
+    public static ExchangeRateForm getExchangeRateForm(HttpServletRequest req) throws IOException, IllegalArgumentException {
+        if (!isForm(req)) {
+            throw new IllegalArgumentException("Invalid request");
+        }
+
+        BufferedReader reader = req.getReader();
+        String line;
+        Map<String, String> data = new HashMap<>();
+        while ((line = reader.readLine()) != null) {
+            String[] fields = line.split("=");
+            String key = fields[0];
+            String value = fields[1];
+            data.put(key, value);
+        }
+
+        if (!data.containsKey("rate")) {
+            throw new IllegalArgumentException("Required form field is missing. Rate");
+        }
+
+        return new ExchangeRateForm(Float.parseFloat(data.get("rate")));
+    }
+
+    public static ExchangeListForm getExchangePost(HttpServletRequest req) throws IllegalArgumentException {
         if (!isForm(req)) {
             throw new IllegalArgumentException("Invalid request");
         }
