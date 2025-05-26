@@ -6,12 +6,10 @@ import com.sabomanq.currencyservice.model.dto.Error;
 import com.sabomanq.currencyservice.model.form.CurrencyForm;
 import com.sabomanq.currencyservice.model.Parsing;
 import com.sabomanq.currencyservice.service.Currencies;
-import flexjson.JSONSerializer;
 
 import java.io.*;
 import javax.servlet.http.*;
 import javax.servlet.annotation.*;
-import javax.xml.crypto.Data;
 
 @WebServlet(value = "/currencies/*")
 public class CurrenciesServlet extends HttpServlet {
@@ -36,7 +34,6 @@ public class CurrenciesServlet extends HttpServlet {
             response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
             Util.printToJs(new Error("Internal error"), response);
         }
-
     }
 
     @Override

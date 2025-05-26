@@ -1,5 +1,7 @@
 package com.sabomanq.currencyservice.model.dto;
 
+import com.sabomanq.currencyservice.model.entity.Currency;
+
 public class CurrencyDTO {
     public int id;
     public String code;
@@ -25,5 +27,12 @@ public class CurrencyDTO {
         this.code = currencyDTO.code;
         this.name = currencyDTO.name;
         this.sign = currencyDTO.sign;
+    }
+
+    public CurrencyDTO(Currency currency) {
+        this.id = currency.id;
+        this.code = currency.code;
+        this.name = currency.name;
+        this.sign = currency.sign;
     }
 }

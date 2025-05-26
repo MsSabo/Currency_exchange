@@ -14,6 +14,7 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
+import java.util.Optional;
 
 @WebServlet(value = "/exchangeRates/*")
 public class ExchangeRateListServlet extends HttpServlet {
@@ -35,8 +36,8 @@ public class ExchangeRateListServlet extends HttpServlet {
     public void doPost(HttpServletRequest req, HttpServletResponse response) throws IOException {
         try {
             ExchangeListForm data = Parsing.getExchangePost(req);
-            ExchangeRateInfo result = exchangeRate.addExchangeRate(data);
-            Util.printToJs(result, response);
+            Optional<ExchangeRateInfo> result = exchangeRate.addExchangeRate(data);
+            Util.printToJs(result.get(), response);
         } catch (UniqueConstraintViolationException err) {
             response.setStatus(HttpServletResponse.SC_CONFLICT);
             Util.printToJs(new Error(err.getMessage()), response);
