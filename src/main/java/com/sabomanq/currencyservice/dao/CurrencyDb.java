@@ -1,9 +1,7 @@
 package com.sabomanq.currencyservice.dao;
 
 import com.sabomanq.currencyservice.model.entity.Currency;
-import org.flywaydb.core.Flyway;
 
-import java.io.File;
 import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
@@ -12,7 +10,6 @@ public class CurrencyDb implements Database{
     private final ConnectionProvider connectionProvider;
 
     public CurrencyDb(ConnectionProvider connectionProvider) {
-        migrate();
         this.connectionProvider = connectionProvider;
     }
 
@@ -35,7 +32,7 @@ public class CurrencyDb implements Database{
             }
         }
         catch (SQLException e) {
-            throw new DatabaseError("Database internal error");
+            throw new DatabaseError("Failed to get currency: " + code);
         }
     }
 
@@ -53,15 +50,14 @@ public class CurrencyDb implements Database{
                 String name = rs.getString("fullName");
                 String code = rs.getString("code");
                 String sign = rs.getString("sign");
-                System.out.println(id + " " + name + " " + code + " " + sign);
                 currencies.add(new Currency(id, code, name, sign));
             }
 
             return currencies;
         }
-        catch (SQLException e)
+        catch (SQLException err)
         {
-            throw new DatabaseError("Database internal error");
+            throw new DatabaseError("Failed to get currencies");
         }
     }
 
@@ -69,10 +65,10 @@ public class CurrencyDb implements Database{
     public Currency addCurrency(Currency currency) throws UniqueConstraintViolationException, DatabaseError {
         String query = "INSERT INTO currencies(fullName, code, sign) VALUES (?, ?, ?)";
 
-        PreparedStatement stmt;
 
         try (Connection conn = connectionProvider.open()) {
             ResultSet id;
+            PreparedStatement stmt;
             stmt = conn.prepareStatement(query, Statement.RETURN_GENERATED_KEYS);
             stmt.setString(1, currency.name);
             stmt.setString(2, currency.code);
@@ -81,7 +77,7 @@ public class CurrencyDb implements Database{
 
             if (rowsCount == 0)
             {
-                return null;
+                throw new DatabaseError("Failed to insert currency.");
             } else {
                 id = stmt.getGeneratedKeys();
                 if (id != null && id.next()) {
@@ -89,7 +85,7 @@ public class CurrencyDb implements Database{
                     System.out.println("Row added with ID: " + idx);
                     return new Currency(idx, currency.code, currency.name, currency.sign);
                 } else {
-                    System.out.println("Failed to add row ID");
+                    throw new DatabaseError("Currency inserted, but no ID was generated.");
                 }
             }
         }
@@ -98,25 +94,7 @@ public class CurrencyDb implements Database{
             if (e.getErrorCode() == 19) {
                 throw new UniqueConstraintViolationException(e.getMessage(), e.getCause());
             }
-            throw new DatabaseError("Database internal error");
-        }
-
-        return null;
-    }
-
-    private void migrate() {
-        String url = "jdbc:sqlite:mydb.db";
-        boolean migrate = false;
-
-        File dbFile = new File("mydb.db");
-        if (dbFile.exists()) {
-        } else {
-            migrate = true;
-        }
-
-        if (migrate) {
-            Flyway flyway = Flyway.configure().dataSource(url, "saba", "saba").load();
-            flyway.migrate();
+            throw new DatabaseError("Database internal error.");
         }
     }
 }
