@@ -6,6 +6,7 @@ import com.sabomanq.currencyservice.dao.NotFoundException;
 import com.sabomanq.currencyservice.dao.SqliteProvider;
 import com.sabomanq.currencyservice.model.Parsing;
 import com.sabomanq.currencyservice.model.dto.Error;
+import com.sabomanq.currencyservice.model.entity.ExchangeRateInfo;
 import com.sabomanq.currencyservice.model.form.ExchangeRateForm;
 import com.sabomanq.currencyservice.service.ExchangeRates;
 
@@ -15,6 +16,7 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
+import java.util.Optional;
 
 @WebServlet(value = "/exchangeRate/*")
 public class ExchangeRateServlet extends HttpServlet {
@@ -25,7 +27,6 @@ public class ExchangeRateServlet extends HttpServlet {
         String pathInfo = req.getPathInfo(); // вернёт "/USD"
         String pair = pathInfo.substring(1);
 
-        System.out.println("Pair: " + pair);
         if (pair.isEmpty()) {
             response.setStatus(HttpServletResponse.SC_NOT_FOUND);
             Util.printToJs(new Error("The currency pair codes are missing from the address."), response);
@@ -33,12 +34,14 @@ public class ExchangeRateServlet extends HttpServlet {
         }
 
         try {
-            Object result = rates.getExchangeRate(pair);
+            Optional<ExchangeRateInfo> result = rates.getExchangeRate(pair);
+            if (!result.isPresent()) {
+                response.setStatus(HttpServletResponse.SC_NOT_FOUND);
+                Util.printToJs(new Error("Exchange pair not found."), response);
+                return;
+            }
             response.setStatus(HttpServletResponse.SC_OK);
-            Util.printToJs(result, response);
-        } catch (NotFoundException err) {
-            response.setStatus(HttpServletResponse.SC_NOT_FOUND);
-            Util.printToJs(new Error(err.getMessage()), response);
+            Util.printToJs(result.get(), response);
         } catch (DatabaseError err) {
             response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
             Util.printToJs(new Error(err.getMessage()), response);

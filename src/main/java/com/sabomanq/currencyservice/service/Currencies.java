@@ -1,8 +1,6 @@
 package com.sabomanq.currencyservice.service;
 
 import com.sabomanq.currencyservice.dao.Database;
-import com.sabomanq.currencyservice.mapper.ViewMapper;
-import com.sabomanq.currencyservice.mapper.ViewMapperImpl;
 import com.sabomanq.currencyservice.model.dto.CurrencyDTO;
 import com.sabomanq.currencyservice.model.entity.Currency;
 import com.sabomanq.currencyservice.model.form.CurrencyForm;
@@ -12,7 +10,6 @@ import java.util.stream.Collectors;
 
 public class Currencies {
     private final Database database;
-    private final ViewMapper mapper = new ViewMapperImpl();
 
     public Currencies(Database database) {
         this.database = database;

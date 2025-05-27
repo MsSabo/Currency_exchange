@@ -161,11 +161,9 @@ public class ExchangeRatesDAO {
             stmt.setBigDecimal(1, new BigDecimal(rate));
             stmt.setString(2, pair);
             int count = stmt.executeUpdate();
-            if (count != 1)
-            {
+            if (count != 1) {
                 throw new NotFoundException("The exchange rate for the pair was not found.");
-            }
-            else {
+            } else {
                 return getExchangeRate(pair);
             }
         }

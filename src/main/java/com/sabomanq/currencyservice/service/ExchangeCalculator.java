@@ -3,12 +3,10 @@ package com.sabomanq.currencyservice.service;
 import com.sabomanq.currencyservice.dao.DatabaseError;
 import com.sabomanq.currencyservice.dao.ExchangeRatesDAO;
 import com.sabomanq.currencyservice.dao.NotFoundException;
-import com.sabomanq.currencyservice.http.Util;
 import com.sabomanq.currencyservice.model.dto.ExchangeRateSumDTO;
 import com.sabomanq.currencyservice.model.entity.ExchangeRateInfo;
 import com.sabomanq.currencyservice.model.form.ExchangeTransactionForm;
 
-import java.sql.SQLException;
 import java.util.Optional;
 
 public class ExchangeCalculator {
@@ -43,15 +41,6 @@ public class ExchangeCalculator {
             } else {
                 throw new NotFoundException("No exchange rate found");
             }
-        }
-    }
-
-    private boolean rateExists(String pair) {
-        try {
-            ratesDAO.getExchangeRate(pair);
-            return true;
-        } catch (Exception err) {
-            return false;
         }
     }
 }

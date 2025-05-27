@@ -3,6 +3,7 @@ package com.sabomanq.currencyservice.model;
 import com.sabomanq.currencyservice.model.form.CurrencyForm;
 import com.sabomanq.currencyservice.model.form.ExchangeListForm;
 import com.sabomanq.currencyservice.model.form.ExchangeRateForm;
+import com.sabomanq.currencyservice.model.form.ExchangeTransactionForm;
 
 import javax.servlet.http.HttpServletRequest;
 import java.io.BufferedReader;
@@ -66,6 +67,19 @@ public class Parsing {
 
         return new ExchangeListForm(baseCode, targetCode, rate);
     }
+
+    public static ExchangeTransactionForm getExchangeTransactionForm(HttpServletRequest request) throws IllegalArgumentException {
+        String fromCode = request.getParameter("from");
+        String toCode = request.getParameter("to");
+        Float amount = Float.parseFloat(request.getParameter("amount"));
+
+        if (fromCode == null || toCode == null || amount == null)  {
+            throw new IllegalArgumentException("Required form field is missing.");
+        }
+
+        return new ExchangeTransactionForm(fromCode, toCode, amount);
+    }
+
 
     private static boolean isForm(HttpServletRequest req) {
         if (req.getContentType() != null && req.getContentType().equals("application/x-www-form-urlencoded")) {

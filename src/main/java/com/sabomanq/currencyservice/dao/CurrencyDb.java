@@ -17,8 +17,6 @@ public class CurrencyDb implements Database{
     }
 
     public Currency getCurrency(String code) throws DatabaseError, NotFoundException {
-        System.out.println("get currency by code : " + code);
-
         String query = "SELECT * FROM Currencies WHERE CODE = ?";
 
         try (Connection connection = connectionProvider.open()) {
@@ -28,7 +26,6 @@ public class CurrencyDb implements Database{
             ResultSet rs = statement.executeQuery();
             if (rs.next()) {
                 int id = rs.getInt("id");
-                System.out.println("get currency by code which has id : " + id);
                 String name = rs.getString("fullName");
                 String cd = rs.getString("code");
                 String sign = rs.getString("sign");
@@ -38,13 +35,11 @@ public class CurrencyDb implements Database{
             }
         }
         catch (SQLException e) {
-            System.out.println(e.getMessage());
             throw new DatabaseError("Database internal error");
         }
     }
 
     public List<Currency> getCurrencies() throws DatabaseError{
-        System.out.println("getCurrencies called");
         List<Currency> currencies = new ArrayList<>();
         String query = "SELECT * FROM currencies";
 
@@ -66,14 +61,12 @@ public class CurrencyDb implements Database{
         }
         catch (SQLException e)
         {
-            e.printStackTrace();
             throw new DatabaseError("Database internal error");
         }
     }
 
     @Override
     public Currency addCurrency(Currency currency) throws UniqueConstraintViolationException, DatabaseError {
-        System.out.println("addCurrency called");
         String query = "INSERT INTO currencies(fullName, code, sign) VALUES (?, ?, ?)";
 
         PreparedStatement stmt;
@@ -102,7 +95,6 @@ public class CurrencyDb implements Database{
         }
         catch (SQLException e)
         {
-            System.out.println("Error code = " + e.getErrorCode());
             if (e.getErrorCode() == 19) {
                 throw new UniqueConstraintViolationException(e.getMessage(), e.getCause());
             }
@@ -115,14 +107,10 @@ public class CurrencyDb implements Database{
     private void migrate() {
         String url = "jdbc:sqlite:mydb.db";
         boolean migrate = false;
-        String currentDir = System.getProperty("user.dir");
-        System.out.println("Current directory: " + currentDir);
 
         File dbFile = new File("mydb.db");
         if (dbFile.exists()) {
-            System.out.println("Database already exists.");
         } else {
-            System.out.println("Database does not exist. Creating...");
             migrate = true;
         }
 
