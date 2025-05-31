@@ -6,7 +6,7 @@ import com.sabomanq.currencyservice.dao.NotFoundException;
 import com.sabomanq.currencyservice.dao.SqliteProvider;
 import com.sabomanq.currencyservice.model.Parsing;
 import com.sabomanq.currencyservice.model.dto.Error;
-import com.sabomanq.currencyservice.model.entity.ExchangeRateInfo;
+import com.sabomanq.currencyservice.model.entity.ExchangeRateFull;
 import com.sabomanq.currencyservice.model.form.ExchangeRateForm;
 import com.sabomanq.currencyservice.service.ExchangeRates;
 
@@ -34,7 +34,7 @@ public class ExchangeRateServlet extends HttpServlet {
         }
 
         try {
-            Optional<ExchangeRateInfo> result = rates.getExchangeRate(pair);
+            Optional<ExchangeRateFull> result = rates.getExchangeRate(pair);
             if (!result.isPresent()) {
                 response.setStatus(HttpServletResponse.SC_NOT_FOUND);
                 Util.printToJs(new Error("Exchange pair not found."), response);

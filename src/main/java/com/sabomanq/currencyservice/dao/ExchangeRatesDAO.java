@@ -1,7 +1,7 @@
 package com.sabomanq.currencyservice.dao;
 
 import com.sabomanq.currencyservice.model.entity.Currency;
-import com.sabomanq.currencyservice.model.entity.ExchangeRateInfo;
+import com.sabomanq.currencyservice.model.entity.ExchangeRateFull;
 
 import java.math.BigDecimal;
 import java.sql.*;
@@ -15,7 +15,7 @@ public class ExchangeRatesDAO {
         this.connectionProvider = connectionProvider;
     }
 
-    public ArrayList<ExchangeRateInfo> getExchangeRates() {
+    public ArrayList<ExchangeRateFull> getExchangeRates() {
         String query =
                 "SELECT \n" +
                 "    er.id,\n" +
@@ -38,11 +38,11 @@ public class ExchangeRatesDAO {
         try (Connection conn = connectionProvider.open()) {
             Statement stmt = conn.createStatement();
             ResultSet rs = stmt.executeQuery(query);
-            ArrayList<ExchangeRateInfo> exchangeRates = new ArrayList<>();
+            ArrayList<ExchangeRateFull> exchangeRates = new ArrayList<>();
             while (rs.next())
             {
                 int id = rs.getInt("id");
-                float rate = rs.getFloat("rate");
+                BigDecimal rate = rs.getBigDecimal("rate");
                 int baseId = rs.getInt("baseId");
                 String baseName = rs.getString("basefullName");
                 String baseCode = rs.getString("baseCode");
@@ -55,7 +55,7 @@ public class ExchangeRatesDAO {
                 Currency base = new Currency(baseId, baseCode, baseName, baseSign);
                 Currency target = new Currency(targetId, targetCode, targetFullName, targetSign);
 
-                exchangeRates.add(new ExchangeRateInfo(id, base, target, rate));
+                exchangeRates.add(new ExchangeRateFull(id, base, target, rate));
             }
 
             return exchangeRates;
@@ -66,7 +66,7 @@ public class ExchangeRatesDAO {
         }
     }
 
-    public Optional<ExchangeRateInfo> getExchangeRate(String pair) throws DatabaseError, NotFoundException {
+    public Optional<ExchangeRateFull> getExchangeRate(String pair) throws DatabaseError, NotFoundException {
         String query = "SELECT \n" +
                 "    er.id,\n" +
                 "    er.rate,\n" +
@@ -93,7 +93,7 @@ public class ExchangeRatesDAO {
             if (rs.next())
             {
                 int id = rs.getInt("id");
-                float rate = rs.getFloat("rate");
+                BigDecimal rate = rs.getBigDecimal("rate");
                 int baseId = rs.getInt("baseId");
                 String baseName = rs.getString("basefullName");
                 String baseCode = rs.getString("baseCode");
@@ -105,7 +105,7 @@ public class ExchangeRatesDAO {
                 String targetSign = rs.getString("targetSign");
                 Currency base = new Currency(baseId, baseCode, baseName, baseSign);
                 Currency target = new Currency(targetId, targetCode, targetFullName, targetSign);
-                return Optional.of(new ExchangeRateInfo(id, base, target, rate));
+                return Optional.of(new ExchangeRateFull(id, base, target, rate));
             } else {
                 return Optional.empty();
             }
@@ -116,7 +116,7 @@ public class ExchangeRatesDAO {
         }
     }
 
-    public Optional<ExchangeRateInfo> addRate(String baseCode, String targetCode, float rate) throws DatabaseError {
+    public Optional<ExchangeRateFull> addRate(String baseCode, String targetCode, float rate) throws DatabaseError {
         String query = "INSERT INTO ExchangeRates (baseCurrencyId, targetCurrencyId, rate)\n" +
                 "SELECT c1.id, c2.id, ?\n" +
                 "FROM Currencies c1\n" +
@@ -145,7 +145,7 @@ public class ExchangeRatesDAO {
         }
     }
 
-    public Optional<ExchangeRateInfo> patchRate(String pair, float rate) throws NotFoundException, DatabaseError {
+    public Optional<ExchangeRateFull> patchRate(String pair, float rate) throws NotFoundException, DatabaseError {
         String query = "UPDATE ExchangeRates\n" +
                 "SET rate = ?\n" +
                 "WHERE id IN (\n" +

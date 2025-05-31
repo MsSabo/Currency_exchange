@@ -1,7 +1,7 @@
 package com.sabomanq.currencyservice.service;
 
 import com.sabomanq.currencyservice.dao.ExchangeRatesDAO;
-import com.sabomanq.currencyservice.model.entity.ExchangeRateInfo;
+import com.sabomanq.currencyservice.model.entity.ExchangeRateFull;
 import com.sabomanq.currencyservice.model.form.ExchangeListForm;
 import com.sabomanq.currencyservice.model.form.ExchangeRateForm;
 
@@ -15,23 +15,22 @@ public class ExchangeRates {
         this.exchangeRatesDAO = database;
     }
 
-    public ArrayList<ExchangeRateInfo> getExchangeRates() {
+    public ArrayList<ExchangeRateFull> getExchangeRates() {
         System.out.println("getExchangeRates:");
-
         return exchangeRatesDAO.getExchangeRates();
     }
 
-    public Optional<ExchangeRateInfo> getExchangeRate(String pair) {
+    public Optional<ExchangeRateFull> getExchangeRate(String pair) {
         System.out.println("getExchangeRate: " + pair);
         return exchangeRatesDAO.getExchangeRate(pair);
     }
 
-    public Optional<ExchangeRateInfo> addExchangeRate(ExchangeListForm data) {
+    public Optional<ExchangeRateFull> addExchangeRate(ExchangeListForm data) {
         System.out.println("addExchangeRate: " + data.toString());
         return  exchangeRatesDAO.addRate(data.baseCode, data.targetCode, data.rate);
     }
 
-    public Optional<ExchangeRateInfo> updateExchangeRate(String pair, ExchangeRateForm data) {
+    public Optional<ExchangeRateFull> updateExchangeRate(String pair, ExchangeRateForm data) {
         System.out.println("updateExchangeRate: " + data.toString());
         return exchangeRatesDAO.patchRate(pair, data.rate);
     }

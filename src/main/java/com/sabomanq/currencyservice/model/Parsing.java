@@ -8,6 +8,7 @@ import com.sabomanq.currencyservice.model.form.ExchangeTransactionForm;
 import javax.servlet.http.HttpServletRequest;
 import java.io.BufferedReader;
 import java.io.IOException;
+import java.math.BigDecimal;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -71,13 +72,13 @@ public class Parsing {
     public static ExchangeTransactionForm getExchangeTransactionForm(HttpServletRequest request) throws IllegalArgumentException {
         String fromCode = request.getParameter("from");
         String toCode = request.getParameter("to");
-        Float amount = Float.parseFloat(request.getParameter("amount"));
+        String amount = request.getParameter("amount");
 
         if (fromCode == null || toCode == null || amount == null)  {
             throw new IllegalArgumentException("Required form field is missing.");
         }
 
-        return new ExchangeTransactionForm(fromCode, toCode, amount);
+        return new ExchangeTransactionForm(fromCode, toCode, new BigDecimal(amount));
     }
 
 

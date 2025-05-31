@@ -1,26 +1,28 @@
 package com.sabomanq.currencyservice.model.dto;
 
-import com.sabomanq.currencyservice.model.entity.ExchangeRateInfo;
+import com.sabomanq.currencyservice.model.entity.ExchangeRateFull;
+
+import java.math.BigDecimal;
 
 public class ExchangeRateSumDTO {
     public CurrencyDTO base;
     public CurrencyDTO target;
-    public float rate;
-    public float amount;
-    public float convertedAmount;
+    public BigDecimal rate;
+    public BigDecimal amount;
+    public BigDecimal convertedAmount;
 
-    public ExchangeRateSumDTO(CurrencyDTO base, CurrencyDTO target, float rate, float amount) {
+    public ExchangeRateSumDTO(CurrencyDTO base, CurrencyDTO target, BigDecimal rate, BigDecimal amount) {
         this.base = base;
         this.target = target;
         this.rate = rate;
         this.amount = amount;
-        this.convertedAmount = amount * rate;
+        this.convertedAmount = amount.multiply(rate);
     }
 
-    public ExchangeRateSumDTO(ExchangeRateInfo exchangeRateInfo, float amount, float convertedAmount) {
-        this.base = new CurrencyDTO(exchangeRateInfo.base);
-        this.target = new CurrencyDTO(exchangeRateInfo.target);
-        this.rate = exchangeRateInfo.rate;
+    public ExchangeRateSumDTO(ExchangeRateFull exchangeRateInfo, BigDecimal amount, BigDecimal convertedAmount) {
+        this.base = new CurrencyDTO(exchangeRateInfo.baseCurrencyId);
+        this.target = new CurrencyDTO(exchangeRateInfo.targetCurrencyId);
+        this.rate = exchangeRateInfo.exchangeRate;
         this.amount = amount;
         this.convertedAmount = convertedAmount;
     }

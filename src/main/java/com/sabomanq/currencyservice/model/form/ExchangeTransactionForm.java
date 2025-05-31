@@ -1,13 +1,15 @@
 package com.sabomanq.currencyservice.model.form;
 
 
+import java.math.BigDecimal;
+
 ///  for calc
 public class ExchangeTransactionForm {
     public String baseCurrency;
     public String targetCurrency;
-    public float amount;
+    public BigDecimal amount;
 
-    public ExchangeTransactionForm(String baseCurrency, String targetCurrency, float amount) {
+    public ExchangeTransactionForm(String baseCurrency, String targetCurrency, BigDecimal amount) {
         this.baseCurrency = baseCurrency;
         this.targetCurrency = targetCurrency;
         this.amount = amount;

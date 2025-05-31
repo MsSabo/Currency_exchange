@@ -2,13 +2,13 @@ package com.sabomanq.currencyservice.model.entity;
 
 import java.math.BigDecimal;
 
-public class ExchangeRate {
+public class ExchangeRateFull {
     public int id;
-    public int baseCurrencyId;
-    public int targetCurrencyId;
+    public Currency baseCurrencyId;
+    public Currency targetCurrencyId;
     public BigDecimal exchangeRate;
 
-    public ExchangeRate(int id, int baseCurrencyId, int targetCurrencyId, BigDecimal exchangeRate) {
+    public ExchangeRateFull(int id, Currency baseCurrencyId, Currency targetCurrencyId, BigDecimal exchangeRate) {
         this.id = id;
         this.baseCurrencyId = baseCurrencyId;
         this.targetCurrencyId = targetCurrencyId;
