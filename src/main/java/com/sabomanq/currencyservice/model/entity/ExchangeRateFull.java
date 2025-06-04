@@ -4,14 +4,14 @@ import java.math.BigDecimal;
 
 public class ExchangeRateFull {
     public int id;
-    public Currency baseCurrencyId;
-    public Currency targetCurrencyId;
+    public Currency baseCurrency;
+    public Currency targetCurrency;
     public BigDecimal exchangeRate;
 
     public ExchangeRateFull(int id, Currency baseCurrencyId, Currency targetCurrencyId, BigDecimal exchangeRate) {
         this.id = id;
-        this.baseCurrencyId = baseCurrencyId;
-        this.targetCurrencyId = targetCurrencyId;
+        this.baseCurrency = baseCurrencyId;
+        this.targetCurrency = targetCurrencyId;
         this.exchangeRate = exchangeRate;
     }
 }

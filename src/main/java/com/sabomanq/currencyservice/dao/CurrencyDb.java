@@ -13,6 +13,7 @@ public class CurrencyDb implements Database{
         this.connectionProvider = connectionProvider;
     }
 
+    
     public Currency getCurrency(String code) throws DatabaseError, NotFoundException {
         String query = "SELECT * FROM Currencies WHERE CODE = ?";
 

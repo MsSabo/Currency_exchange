@@ -20,8 +20,8 @@ public class ExchangeRateSumDTO {
     }
 
     public ExchangeRateSumDTO(ExchangeRateFull exchangeRateInfo, BigDecimal amount, BigDecimal convertedAmount) {
-        this.base = new CurrencyDTO(exchangeRateInfo.baseCurrencyId);
-        this.target = new CurrencyDTO(exchangeRateInfo.targetCurrencyId);
+        this.base = new CurrencyDTO(exchangeRateInfo.baseCurrency);
+        this.target = new CurrencyDTO(exchangeRateInfo.targetCurrency);
         this.rate = exchangeRateInfo.exchangeRate;
         this.amount = amount;
         this.convertedAmount = convertedAmount;

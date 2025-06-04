@@ -40,6 +40,7 @@ public class ExchangeRateServlet extends HttpServlet {
                 Util.printToJs(new Error("Exchange pair not found."), response);
                 return;
             }
+
             response.setStatus(HttpServletResponse.SC_OK);
             Util.printToJs(result.get(), response);
         } catch (DatabaseError err) {
@@ -54,9 +55,9 @@ public class ExchangeRateServlet extends HttpServlet {
             String exchangePair = pathInfo.substring(1); // удаляем начальный "/"
 
             ExchangeRateForm form = Parsing.getExchangeRateForm(request);
-            Object result = rates.updateExchangeRate(exchangePair, form);
+            Optional<ExchangeRateFull> result = rates.updateExchangeRate(exchangePair, form);
             response.setStatus(HttpServletResponse.SC_OK);
-            Util.printToJs(result, response);
+            Util.printToJs(result.get(), response);
         } catch (NotFoundException err) {
             response.setStatus(HttpServletResponse.SC_NOT_FOUND);
             Util.printToJs(new Error(err.getMessage()), response);
