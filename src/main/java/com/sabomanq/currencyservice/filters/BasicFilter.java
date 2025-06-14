@@ -19,10 +19,7 @@ public class BasicFilter implements Filter {
         chain.doFilter(request, response);
         int status = res.getStatus(); // Получаем статус после обработки
         System.out.println("HTTP status: " + status);
-
-
     }
-
 
     public void destroy() {
     }

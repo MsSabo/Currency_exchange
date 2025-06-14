@@ -26,12 +26,12 @@ public class ExchangeCalculator {
 */
         Optional<ExchangeRateFull> rate = ratesDAO.getExchangeRate(form.baseCurrency + form.targetCurrency);
         if (rate.isPresent()) {
-            BigDecimal convertedAmount = rate.get().exchangeRate.multiply(form.amount);
+            BigDecimal convertedAmount = rate.get().rate.multiply(form.amount);
             ExchangeRateSumDTO result = new ExchangeRateSumDTO(rate.get(), form.amount, convertedAmount);
             return result;
         } else if ((rate = ratesDAO.getExchangeRate(form.targetCurrency + form.baseCurrency)).isPresent()){
             BigDecimal one = BigDecimal.ONE; // аналог 1
-            BigDecimal rateValue = rate.get().exchangeRate; // предположим, это BigDecimal
+            BigDecimal rateValue = rate.get().rate; // предположим, это BigDecimal
             BigDecimal amount = form.amount; // тоже BigDecimal
 
             BigDecimal convertedAmount = one.divide(rateValue, 10, RoundingMode.HALF_UP)
@@ -42,7 +42,7 @@ public class ExchangeCalculator {
             Optional<ExchangeRateFull> usdBase = ratesDAO.getExchangeRate("USD" + form.baseCurrency);
             Optional<ExchangeRateFull> usdTarget = ratesDAO.getExchangeRate("USD" + form.targetCurrency);
             if (usdBase.isPresent() && usdTarget.isPresent()) {
-                BigDecimal convertedAmount = ((usdTarget.get().exchangeRate.divide(usdBase.get().exchangeRate)).multiply(form.amount));
+                BigDecimal convertedAmount = ((usdTarget.get().rate.divide(usdBase.get().rate)).multiply(form.amount));
                 ExchangeRateSumDTO result = new ExchangeRateSumDTO(rate.get(), form.amount, convertedAmount);
                 return result;
             } else {

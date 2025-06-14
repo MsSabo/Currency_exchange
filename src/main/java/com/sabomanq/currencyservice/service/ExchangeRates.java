@@ -23,8 +23,8 @@ public class ExchangeRates {
         return exchangeRatesDAO.getExchangeRate(pair);
     }
 
-    public Optional<ExchangeRateFull> addExchangeRate(ExchangeListForm data) {
-        return  exchangeRatesDAO.addRate(data.baseCode, data.targetCode, data.rate);
+    public ExchangeRateFull addExchangeRate(ExchangeListForm data) {
+        return exchangeRatesDAO.addRate(data.baseCode, data.targetCode, data.rate);
     }
 
     public Optional<ExchangeRateFull> updateExchangeRate(String pair, ExchangeRateForm data) {

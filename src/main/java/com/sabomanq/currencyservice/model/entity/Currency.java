@@ -1,7 +1,6 @@
 package com.sabomanq.currencyservice.model.entity;
 
 public class Currency {
-    /// Constant names for table fields
     public int id;
     public String code;
     public String name;

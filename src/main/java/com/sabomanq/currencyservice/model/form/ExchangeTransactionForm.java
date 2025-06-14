@@ -1,6 +1,5 @@
 package com.sabomanq.currencyservice.model.form;
 
-
 import java.math.BigDecimal;
 
 ///  for calc

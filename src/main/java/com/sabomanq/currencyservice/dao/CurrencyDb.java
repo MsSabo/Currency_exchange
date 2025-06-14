@@ -6,14 +6,13 @@ import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
 
-public class CurrencyDb implements Database{
+public class CurrencyDb implements Database {
     private final ConnectionProvider connectionProvider;
 
     public CurrencyDb(ConnectionProvider connectionProvider) {
         this.connectionProvider = connectionProvider;
     }
 
-    
     public Currency getCurrency(String code) throws DatabaseError, NotFoundException {
         String query = "SELECT * FROM Currencies WHERE CODE = ?";
 
@@ -37,7 +36,7 @@ public class CurrencyDb implements Database{
         }
     }
 
-    public List<Currency> getCurrencies() throws DatabaseError{
+    public List<Currency> getCurrencies() throws DatabaseError {
         List<Currency> currencies = new ArrayList<>();
         String query = "SELECT * FROM currencies";
 
@@ -45,6 +44,7 @@ public class CurrencyDb implements Database{
             assert conn != null;
             Statement stmt = conn.createStatement();
             ResultSet rs = stmt.executeQuery(query);
+
             while (rs.next())
             {
                 int id = rs.getInt("id");
@@ -55,9 +55,7 @@ public class CurrencyDb implements Database{
             }
 
             return currencies;
-        }
-        catch (SQLException err)
-        {
+        } catch (SQLException err) {
             throw new DatabaseError("Failed to get currencies");
         }
     }
@@ -65,7 +63,6 @@ public class CurrencyDb implements Database{
     @Override
     public Currency addCurrency(Currency currency) throws UniqueConstraintViolationException, DatabaseError {
         String query = "INSERT INTO currencies(fullName, code, sign) VALUES (?, ?, ?)";
-
 
         try (Connection conn = connectionProvider.open()) {
             ResultSet id;
@@ -89,9 +86,7 @@ public class CurrencyDb implements Database{
                     throw new DatabaseError("Currency inserted, but no ID was generated.");
                 }
             }
-        }
-        catch (SQLException e)
-        {
+        } catch (SQLException e) {
             if (e.getErrorCode() == 19) {
                 throw new UniqueConstraintViolationException(e.getMessage(), e.getCause());
             }

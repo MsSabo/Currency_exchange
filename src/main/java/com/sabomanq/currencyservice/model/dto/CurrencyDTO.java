@@ -1,7 +1,9 @@
 package com.sabomanq.currencyservice.model.dto;
 
+import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 import com.sabomanq.currencyservice.model.entity.Currency;
 
+@JsonPropertyOrder({ "id", "name", "code", "sign"})
 public class CurrencyDTO {
     public int id;
     public String code;
@@ -16,7 +18,7 @@ public class CurrencyDTO {
     }
 
     public CurrencyDTO(int id, String code, String name, String sign) {
-        this.id = id;
+        this.id  = id;
         this.code = code;
         this.name = name;
         this.sign = sign;

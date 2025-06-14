@@ -1,5 +1,6 @@
 package com.sabomanq.currencyservice.http;
 
+import com.sabomanq.currencyservice.dao.DatabaseError;
 import com.sabomanq.currencyservice.dao.ExchangeRatesDAO;
 import com.sabomanq.currencyservice.dao.SqliteProvider;
 import com.sabomanq.currencyservice.dao.UniqueConstraintViolationException;
@@ -14,7 +15,6 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
-import java.util.Optional;
 
 @WebServlet(value = "/exchangeRates/*")
 public class ExchangeRateListServlet extends HttpServlet {
@@ -36,15 +36,15 @@ public class ExchangeRateListServlet extends HttpServlet {
     public void doPost(HttpServletRequest req, HttpServletResponse response) throws IOException {
         try {
             ExchangeListForm data = Parsing.getExchangePost(req);
-            Optional<ExchangeRateFull> result = exchangeRate.addExchangeRate(data);
-            Util.printToJs(result.get(), response);
+            ExchangeRateFull result = exchangeRate.addExchangeRate(data);
+            Util.printToJs(result, response);
         } catch (UniqueConstraintViolationException err) {
             response.setStatus(HttpServletResponse.SC_CONFLICT);
             Util.printToJs(new Error(err.getMessage()), response);
         } catch (IllegalArgumentException err) {
             response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
             Util.printToJs(new Error(err.getMessage()), response);
-        } catch (Exception err) {
+        } catch (DatabaseError err) {
             response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
             Util.printToJs(new Error(err.getMessage()), response);
         }

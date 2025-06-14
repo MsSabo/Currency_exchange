@@ -15,7 +15,7 @@ public class ExchangeRatesDAO {
         this.connectionProvider = connectionProvider;
     }
 
-    public ArrayList<ExchangeRateFull> getExchangeRates() {
+    public ArrayList<ExchangeRateFull> getExchangeRates() throws DatabaseError {
         String query =
                 "SELECT \n" +
                 "    er.id,\n" +
@@ -39,6 +39,7 @@ public class ExchangeRatesDAO {
             Statement stmt = conn.createStatement();
             ResultSet rs = stmt.executeQuery(query);
             ArrayList<ExchangeRateFull> exchangeRates = new ArrayList<>();
+
             while (rs.next())
             {
                 int id = rs.getInt("id");
@@ -59,14 +60,12 @@ public class ExchangeRatesDAO {
             }
 
             return exchangeRates;
-        }
-        catch (SQLException e)
-        {
+        } catch (SQLException e) {
            throw new DatabaseError("Internal database error");
         }
     }
 
-    public Optional<ExchangeRateFull> getExchangeRate(String pair) throws DatabaseError, NotFoundException {
+    public Optional<ExchangeRateFull> getExchangeRate(String pair) throws DatabaseError {
         String query = "SELECT \n" +
                 "    er.id,\n" +
                 "    er.rate,\n" +
@@ -116,7 +115,7 @@ public class ExchangeRatesDAO {
         }
     }
 
-    public Optional<ExchangeRateFull> addRate(String baseCode, String targetCode, float rate) throws DatabaseError {
+    public ExchangeRateFull addRate(String baseCode, String targetCode, float rate) throws DatabaseError {
         String query = "INSERT INTO ExchangeRates (baseCurrencyId, targetCurrencyId, rate)\n" +
                 "SELECT c1.id, c2.id, ?\n" +
                 "FROM Currencies c1\n" +
@@ -130,14 +129,11 @@ public class ExchangeRatesDAO {
             int count = stmt.executeUpdate();
             if (count != 1)
             {
-                return null;
+                throw new DatabaseError("Failed to insert rate");
+            } else {
+                return getExchangeRate(baseCode + targetCode).isPresent() ? getExchangeRate(baseCode + targetCode).get() : null;
             }
-            else {
-                return getExchangeRate(baseCode + targetCode);
-            }
-        }
-        catch (SQLException e)
-        {
+        } catch (SQLException e) {
             if (e.getErrorCode() == 19) {
                 throw new UniqueConstraintViolationException(e.getMessage(), e.getCause());
             }
@@ -160,15 +156,12 @@ public class ExchangeRatesDAO {
             PreparedStatement stmt = conn.prepareStatement(query);
             stmt.setBigDecimal(1, new BigDecimal(rate));
             stmt.setString(2, pair);
-            int count = stmt.executeUpdate();
-            if (count != 1) {
+            if (stmt.executeUpdate() != 1) {
                 throw new NotFoundException("The exchange rate for the pair was not found.");
             } else {
                 return getExchangeRate(pair);
             }
-        }
-        catch (SQLException err)
-        {
+        } catch (SQLException err) {
             throw new DatabaseError("Internal database error");
         }
     }
