@@ -33,17 +33,13 @@ public class CurrencyServlet extends HttpServlet {
                 Util.printToJs(new Error("Currency code is empty"), response);
                 return;
             }
-
             CurrencyDTO result = currencies.getCurrency(currencyCode);
             response.setStatus(HttpServletResponse.SC_OK);
             Util.printToJs(result, response);
         } catch (NotFoundException err) {
             response.setStatus(HttpServletResponse.SC_NOT_FOUND);
             Util.printToJs(new Error("Currency not found"), response);
-        } catch (DatabaseError err) {
-            response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
-            Util.printToJs(new Error("Internal error"), response);
-        } catch (IOException e) {
+        } catch (DatabaseError | IOException err) {
             response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
             Util.printToJs(new Error("Internal error"), response);
         }

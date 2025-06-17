@@ -30,9 +30,9 @@ public class ExchangeCalculator {
             ExchangeRateSumDTO result = new ExchangeRateSumDTO(rate.get(), form.amount, convertedAmount);
             return result;
         } else if ((rate = ratesDAO.getExchangeRate(form.targetCurrency + form.baseCurrency)).isPresent()){
-            BigDecimal one = BigDecimal.ONE; // аналог 1
-            BigDecimal rateValue = rate.get().rate; // предположим, это BigDecimal
-            BigDecimal amount = form.amount; // тоже BigDecimal
+            BigDecimal one = BigDecimal.ONE;
+            BigDecimal rateValue = rate.get().rate;
+            BigDecimal amount = form.amount;
 
             BigDecimal convertedAmount = one.divide(rateValue, 10, RoundingMode.HALF_UP)
                     .multiply(amount);

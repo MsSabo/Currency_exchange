@@ -27,7 +27,7 @@ public class ExchangeRates {
         return exchangeRatesDAO.addRate(data.baseCode, data.targetCode, data.rate);
     }
 
-    public Optional<ExchangeRateFull> updateExchangeRate(String pair, ExchangeRateForm data) {
+    public ExchangeRateFull updateExchangeRate(String pair, ExchangeRateForm data) {
         return exchangeRatesDAO.patchRate(pair, data.rate);
     }
 

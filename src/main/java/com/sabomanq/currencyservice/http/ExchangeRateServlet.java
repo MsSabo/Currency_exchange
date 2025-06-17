@@ -6,8 +6,10 @@ import com.sabomanq.currencyservice.dao.NotFoundException;
 import com.sabomanq.currencyservice.dao.SqliteProvider;
 import com.sabomanq.currencyservice.model.Parsing;
 import com.sabomanq.currencyservice.model.dto.Error;
+import com.sabomanq.currencyservice.model.dto.ExchangeRateDTO;
 import com.sabomanq.currencyservice.model.entity.ExchangeRateFull;
 import com.sabomanq.currencyservice.model.form.ExchangeRateForm;
+import com.sabomanq.currencyservice.model.mapper.ExchangeRateMapper;
 import com.sabomanq.currencyservice.service.ExchangeRates;
 
 import javax.servlet.ServletException;
@@ -40,9 +42,9 @@ public class ExchangeRateServlet extends HttpServlet {
                 Util.printToJs(new Error("Exchange pair not found."), response);
                 return;
             }
-
+            ExchangeRateDTO output = ExchangeRateMapper.INSTANCE.toDto(result.get());
             response.setStatus(HttpServletResponse.SC_OK);
-            Util.printToJs(result.get(), response);
+            Util.printToJs(output, response);
         } catch (DatabaseError err) {
             response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
             Util.printToJs(new Error(err.getMessage()), response);
@@ -53,11 +55,11 @@ public class ExchangeRateServlet extends HttpServlet {
         try {
             String pathInfo = request.getPathInfo(); // вернёт "/USD"
             String exchangePair = pathInfo.substring(1); // удаляем начальный "/"
-
             ExchangeRateForm form = Parsing.getExchangeRateForm(request);
-            Optional<ExchangeRateFull> result = rates.updateExchangeRate(exchangePair, form);
+
+            ExchangeRateDTO result = ExchangeRateMapper.INSTANCE.toDto(rates.updateExchangeRate(exchangePair, form));
             response.setStatus(HttpServletResponse.SC_OK);
-            Util.printToJs(result.get(), response);
+            Util.printToJs(result, response);
         } catch (NotFoundException err) {
             response.setStatus(HttpServletResponse.SC_NOT_FOUND);
             Util.printToJs(new Error(err.getMessage()), response);

@@ -16,24 +16,22 @@ public class ExchangeRatesDAO {
     }
 
     public ArrayList<ExchangeRateFull> getExchangeRates() throws DatabaseError {
-        String query =
-                "SELECT \n" +
-                "    er.id,\n" +
-                "    er.rate,\n" +
-                "    \n" +
-                "    bc.id AS baseId,\n" +
-                "    bc.code AS baseCode,\n" +
-                "    bc.fullName AS basefullName,\n" +
-                "    bc.sign AS baseSign,\n" +
-                "    \n" +
-                "    tc.id AS targetId,\n" +
-                "    tc.code AS targetCode,\n" +
-                "    tc.fullName AS targetfullName,\n" +
-                "    tc.sign AS targetSign\n" +
-                "\n" +
-                "FROM ExchangeRates er\n" +
-                "JOIN Currencies bc ON er.baseCurrencyId = bc.id\n" +
-                "JOIN Currencies tc ON er.targetCurrencyId = tc.id;";
+        String query = """
+                       SELECT
+                           er.id,
+                           er.rate,
+                           bc.id AS baseId,
+                           bc.code AS baseCode,
+                           bc.fullName AS basefullName,
+                           bc.sign AS baseSign,
+                           tc.id AS targetId,
+                           tc.code AS targetCode,
+                           tc.fullName AS targetfullName,
+                           tc.sign AS targetSign
+                       FROM ExchangeRates er
+                       JOIN Currencies bc ON er.baseCurrencyId = bc.id
+                       JOIN Currencies tc ON er.targetCurrencyId = tc.id;
+                       """;
 
         try (Connection conn = connectionProvider.open()) {
             Statement stmt = conn.createStatement();
@@ -65,25 +63,28 @@ public class ExchangeRatesDAO {
         }
     }
 
+    public Optional<ExchangeRateFull> getExchangeRate(String base, String target) {
+        return getExchangeRate(base + target);
+    }
+
     public Optional<ExchangeRateFull> getExchangeRate(String pair) throws DatabaseError {
-        String query = "SELECT \n" +
-                "    er.id,\n" +
-                "    er.rate,\n" +
-                "    \n" +
-                "    bc.id AS baseId,\n" +
-                "    bc.code AS baseCode,\n" +
-                "    bc.fullName AS basefullName,\n" +
-                "    bc.sign AS baseSign,\n" +
-                "    \n" +
-                "    tc.id AS targetId,\n" +
-                "    tc.code AS targetCode,\n" +
-                "    tc.fullName AS targetfullName,\n" +
-                "    tc.sign AS targetSign\n" +
-                "\n" +
-                "FROM ExchangeRates er\n" +
-                "JOIN Currencies bc ON er.baseCurrencyId = bc.id\n" +
-                "JOIN Currencies tc ON er.targetCurrencyId = tc.id\n" +
-                "WHERE (bc.code || tc.code) = ?";
+        String query = """
+                       SELECT
+                           er.id,
+                           er.rate,
+                           bc.id AS baseId,
+                           bc.code AS baseCode,
+                           bc.fullName AS basefullName,
+                           bc.sign AS baseSign,
+                           tc.id AS targetId,
+                           tc.code AS targetCode,
+                           tc.fullName AS targetfullName,
+                           tc.sign AS targetSign
+                       FROM ExchangeRates er
+                       JOIN Currencies bc ON er.baseCurrencyId = bc.id
+                       JOIN Currencies tc ON er.targetCurrencyId = tc.id
+                       WHERE (bc.code || tc.code) = ?
+                       """;
 
         try (Connection conn = connectionProvider.open()) {
             PreparedStatement stmt = conn.prepareStatement(query);
@@ -116,22 +117,26 @@ public class ExchangeRatesDAO {
     }
 
     public ExchangeRateFull addRate(String baseCode, String targetCode, float rate) throws DatabaseError {
-        String query = "INSERT INTO ExchangeRates (baseCurrencyId, targetCurrencyId, rate)\n" +
-                "SELECT c1.id, c2.id, ?\n" +
-                "FROM Currencies c1\n" +
-                "JOIN Currencies c2 ON 1 = 1\n" +
-                "WHERE c1.code = ? AND c2.code = ?";
+        String query = """
+                       INSERT INTO ExchangeRates (baseCurrencyId, targetCurrencyId, rate)
+                           VALUES (
+                               (SELECT id FROM Currencies WHERE code = ?),
+                               (SELECT id FROM Currencies WHERE code = ?),
+                               ?
+                           )
+                       """;
+
         try (Connection conn = connectionProvider.open()) {
             PreparedStatement stmt = conn.prepareStatement(query);
-            stmt.setBigDecimal(1, new BigDecimal(rate));
-            stmt.setString(2, baseCode);
-            stmt.setString(3, targetCode);
+            stmt.setString(1, baseCode);
+            stmt.setString(2, targetCode);
+            stmt.setBigDecimal(3, new BigDecimal(rate));
             int count = stmt.executeUpdate();
             if (count != 1)
             {
                 throw new DatabaseError("Failed to insert rate");
             } else {
-                return getExchangeRate(baseCode + targetCode).isPresent() ? getExchangeRate(baseCode + targetCode).get() : null;
+                return getExchangeRate(baseCode + targetCode).orElseThrow(() -> new DatabaseError("Inserted rate not found."));
             }
         } catch (SQLException e) {
             if (e.getErrorCode() == 19) {
@@ -141,16 +146,18 @@ public class ExchangeRatesDAO {
         }
     }
 
-    public Optional<ExchangeRateFull> patchRate(String pair, float rate) throws NotFoundException, DatabaseError {
-        String query = "UPDATE ExchangeRates\n" +
-                "SET rate = ?\n" +
-                "WHERE id IN (\n" +
-                "    SELECT rates.id\n" +
-                "    FROM ExchangeRates AS rates\n" +
-                "    JOIN Currencies AS c1 ON rates.baseCurrencyId = c1.id\n" +
-                "    JOIN Currencies AS c2 ON rates.targetCurrencyId = c2.id\n" +
-                "    WHERE c1.code || c2.code = ?\n" +
-                ");";
+    public ExchangeRateFull patchRate(String pair, float rate) throws NotFoundException, DatabaseError {
+        String query = """
+                       UPDATE ExchangeRates
+                       SET rate = ?
+                       WHERE id IN (
+                           SELECT rates.id
+                           FROM ExchangeRates AS rates
+                           JOIN Currencies AS c1 ON rates.baseCurrencyId = c1.id
+                           JOIN Currencies AS c2 ON rates.targetCurrencyId = c2.id
+                           WHERE c1.code || c2.code = ?
+                       );
+                       """;
 
         try (Connection conn = connectionProvider.open()) {
             PreparedStatement stmt = conn.prepareStatement(query);
@@ -159,7 +166,7 @@ public class ExchangeRatesDAO {
             if (stmt.executeUpdate() != 1) {
                 throw new NotFoundException("The exchange rate for the pair was not found.");
             } else {
-                return getExchangeRate(pair);
+                return getExchangeRate(pair).orElseThrow(() -> new DatabaseError("Updated pair not found."));
             }
         } catch (SQLException err) {
             throw new DatabaseError("Internal database error");

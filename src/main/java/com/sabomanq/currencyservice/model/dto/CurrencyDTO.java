@@ -10,6 +10,9 @@ public class CurrencyDTO {
     public String name;
     public String sign;
 
+    public CurrencyDTO() {
+    }
+
     public CurrencyDTO(Currency currency) {
         this.id = currency.id;
         this.code = currency.code;

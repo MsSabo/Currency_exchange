@@ -4,6 +4,7 @@ import com.sabomanq.currencyservice.dao.Database;
 import com.sabomanq.currencyservice.model.dto.CurrencyDTO;
 import com.sabomanq.currencyservice.model.entity.Currency;
 import com.sabomanq.currencyservice.model.form.CurrencyForm;
+import com.sabomanq.currencyservice.model.mapper.CurrencyMapper;
 
 import java.util.List;
 import java.util.stream.Collectors;
@@ -17,8 +18,9 @@ public class Currencies {
 
     public CurrencyDTO getCurrency(String code) {
         synchronized (database) {
+            System.out.println("getCurrency");
             Currency result = database.getCurrency(code);
-            return new CurrencyDTO(result.id, result.code, result.name, result.sign);
+            return CurrencyMapper.INSTANCE.currencyToDto(result);
         }
     }
     
