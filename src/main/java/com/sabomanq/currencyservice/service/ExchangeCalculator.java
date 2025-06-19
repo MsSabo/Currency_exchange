@@ -4,7 +4,7 @@ import com.sabomanq.currencyservice.dao.DatabaseError;
 import com.sabomanq.currencyservice.dao.ExchangeRatesDAO;
 import com.sabomanq.currencyservice.dao.NotFoundException;
 import com.sabomanq.currencyservice.model.dto.ExchangeRateSumDTO;
-import com.sabomanq.currencyservice.model.entity.ExchangeRateFull;
+import com.sabomanq.currencyservice.model.entity.ExchangeRate;
 import com.sabomanq.currencyservice.model.form.ExchangeTransactionForm;
 
 import java.math.BigDecimal;
@@ -24,7 +24,7 @@ public class ExchangeCalculator {
         В таблице ExchangeRates существует валютная пара BA - берем её курс, и считаем обратный, чтобы получить AB
         В таблице ExchangeRates существуют валютные пары USD-A и USD-B - вычисляем из этих курсов курс AB
 */
-        Optional<ExchangeRateFull> rate = ratesDAO.getExchangeRate(form.baseCurrency + form.targetCurrency);
+        Optional<ExchangeRate> rate = ratesDAO.getExchangeRate(form.baseCurrency + form.targetCurrency);
         if (rate.isPresent()) {
             BigDecimal convertedAmount = rate.get().rate.multiply(form.amount);
             ExchangeRateSumDTO result = new ExchangeRateSumDTO(rate.get(), form.amount, convertedAmount);
@@ -39,8 +39,8 @@ public class ExchangeCalculator {
             ExchangeRateSumDTO result = new ExchangeRateSumDTO(rate.get(), form.amount, convertedAmount);
             return result;
         } else {
-            Optional<ExchangeRateFull> usdBase = ratesDAO.getExchangeRate("USD" + form.baseCurrency);
-            Optional<ExchangeRateFull> usdTarget = ratesDAO.getExchangeRate("USD" + form.targetCurrency);
+            Optional<ExchangeRate> usdBase = ratesDAO.getExchangeRate("USD" + form.baseCurrency);
+            Optional<ExchangeRate> usdTarget = ratesDAO.getExchangeRate("USD" + form.targetCurrency);
             if (usdBase.isPresent() && usdTarget.isPresent()) {
                 BigDecimal convertedAmount = ((usdTarget.get().rate.divide(usdBase.get().rate)).multiply(form.amount));
                 ExchangeRateSumDTO result = new ExchangeRateSumDTO(rate.get(), form.amount, convertedAmount);

@@ -6,7 +6,7 @@ import com.sabomanq.currencyservice.dao.SqliteProvider;
 import com.sabomanq.currencyservice.dao.UniqueConstraintViolationException;
 import com.sabomanq.currencyservice.model.dto.Error;
 import com.sabomanq.currencyservice.model.dto.ExchangeRateDTO;
-import com.sabomanq.currencyservice.model.entity.ExchangeRateFull;
+import com.sabomanq.currencyservice.model.entity.ExchangeRate;
 import com.sabomanq.currencyservice.model.form.ExchangeListForm;
 import com.sabomanq.currencyservice.model.Parsing;
 import com.sabomanq.currencyservice.service.ExchangeRates;
@@ -37,7 +37,7 @@ public class ExchangeRateListServlet extends HttpServlet {
     public void doPost(HttpServletRequest req, HttpServletResponse response) throws IOException {
         try {
             ExchangeListForm data = Parsing.getExchangePost(req);
-            ExchangeRateFull result = exchangeRate.addExchangeRate(data);
+            ExchangeRate result = exchangeRate.addExchangeRate(data);
             //ExchangeRateDTO output = new ExchangeRateDTO(result.id, result.baseCurrency, result.targetCurrency, result.rate);
             Util.printToJs(result, response);
         } catch (UniqueConstraintViolationException err) {

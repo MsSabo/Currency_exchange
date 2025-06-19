@@ -1,7 +1,7 @@
 package com.sabomanq.currencyservice.model.mapper;
 
 import com.sabomanq.currencyservice.model.dto.ExchangeRateDTO;
-import com.sabomanq.currencyservice.model.entity.ExchangeRateFull;
+import com.sabomanq.currencyservice.model.entity.ExchangeRate;
 import org.mapstruct.Mapper;
 import org.mapstruct.factory.Mappers;
 
@@ -9,5 +9,5 @@ import org.mapstruct.factory.Mappers;
 public interface ExchangeRateMapper {
     ExchangeRateMapper INSTANCE = Mappers.getMapper(ExchangeRateMapper.class);
 
-    ExchangeRateDTO toDto(ExchangeRateFull exchangeRateFull);
+    ExchangeRateDTO toDto(ExchangeRate exchangeRateFull);
 }

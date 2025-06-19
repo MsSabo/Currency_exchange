@@ -2,7 +2,7 @@ package com.sabomanq.currencyservice.model.dto;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
-import com.sabomanq.currencyservice.model.entity.ExchangeRateFull;
+import com.sabomanq.currencyservice.model.entity.ExchangeRate;
 
 import java.math.BigDecimal;
 
@@ -20,7 +20,7 @@ public class ExchangeRateSumDTO {
     public ExchangeRateSumDTO() {
     }
 
-    public ExchangeRateSumDTO(ExchangeRateFull exchangeRateInfo, BigDecimal amount, BigDecimal convertedAmount) {
+    public ExchangeRateSumDTO(ExchangeRate exchangeRateInfo, BigDecimal amount, BigDecimal convertedAmount) {
         this.base = new CurrencyDTO(exchangeRateInfo.baseCurrency);
         this.target = new CurrencyDTO(exchangeRateInfo.targetCurrency);
         this.rate = exchangeRateInfo.rate;

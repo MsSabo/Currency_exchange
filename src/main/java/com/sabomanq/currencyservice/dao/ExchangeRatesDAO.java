@@ -1,7 +1,7 @@
 package com.sabomanq.currencyservice.dao;
 
 import com.sabomanq.currencyservice.model.entity.Currency;
-import com.sabomanq.currencyservice.model.entity.ExchangeRateFull;
+import com.sabomanq.currencyservice.model.entity.ExchangeRate;
 
 import java.math.BigDecimal;
 import java.sql.*;
@@ -15,7 +15,7 @@ public class ExchangeRatesDAO {
         this.connectionProvider = connectionProvider;
     }
 
-    public ArrayList<ExchangeRateFull> getExchangeRates() throws DatabaseError {
+    public ArrayList<ExchangeRate> getExchangeRates() throws DatabaseError {
         String query = """
                        SELECT
                            er.id,
@@ -36,7 +36,7 @@ public class ExchangeRatesDAO {
         try (Connection conn = connectionProvider.open()) {
             Statement stmt = conn.createStatement();
             ResultSet rs = stmt.executeQuery(query);
-            ArrayList<ExchangeRateFull> exchangeRates = new ArrayList<>();
+            ArrayList<ExchangeRate> exchangeRates = new ArrayList<>();
 
             while (rs.next())
             {
@@ -54,7 +54,7 @@ public class ExchangeRatesDAO {
                 Currency base = new Currency(baseId, baseCode, baseName, baseSign);
                 Currency target = new Currency(targetId, targetCode, targetFullName, targetSign);
 
-                exchangeRates.add(new ExchangeRateFull(id, base, target, rate));
+                exchangeRates.add(new ExchangeRate(id, base, target, rate));
             }
 
             return exchangeRates;
@@ -63,11 +63,11 @@ public class ExchangeRatesDAO {
         }
     }
 
-    public Optional<ExchangeRateFull> getExchangeRate(String base, String target) {
+    public Optional<ExchangeRate> getExchangeRate(String base, String target) {
         return getExchangeRate(base + target);
     }
 
-    public Optional<ExchangeRateFull> getExchangeRate(String pair) throws DatabaseError {
+    public Optional<ExchangeRate> getExchangeRate(String pair) throws DatabaseError {
         String query = """
                        SELECT
                            er.id,
@@ -105,7 +105,7 @@ public class ExchangeRatesDAO {
                 String targetSign = rs.getString("targetSign");
                 Currency base = new Currency(baseId, baseCode, baseName, baseSign);
                 Currency target = new Currency(targetId, targetCode, targetFullName, targetSign);
-                return Optional.of(new ExchangeRateFull(id, base, target, rate));
+                return Optional.of(new ExchangeRate(id, base, target, rate));
             } else {
                 return Optional.empty();
             }
@@ -116,7 +116,7 @@ public class ExchangeRatesDAO {
         }
     }
 
-    public ExchangeRateFull addRate(String baseCode, String targetCode, float rate) throws DatabaseError {
+    public ExchangeRate addRate(String baseCode, String targetCode, float rate) throws DatabaseError {
         String query = """
                        INSERT INTO ExchangeRates (baseCurrencyId, targetCurrencyId, rate)
                            VALUES (
@@ -146,7 +146,7 @@ public class ExchangeRatesDAO {
         }
     }
 
-    public ExchangeRateFull patchRate(String pair, float rate) throws NotFoundException, DatabaseError {
+    public ExchangeRate patchRate(String pair, float rate) throws NotFoundException, DatabaseError {
         String query = """
                        UPDATE ExchangeRates
                        SET rate = ?
