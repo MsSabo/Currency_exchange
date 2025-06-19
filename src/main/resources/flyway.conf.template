@@ -1,0 +1,4 @@
+flyway.dbname=my.db
+flyway.url=jdbc:sqlite:mydb.db
+flyway.user=
+flyway.password=
