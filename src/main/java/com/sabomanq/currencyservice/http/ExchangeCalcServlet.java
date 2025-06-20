@@ -1,11 +1,11 @@
 package com.sabomanq.currencyservice.http;
 
+import com.sabomanq.currencyservice.dao.CurrencyDb;
 import com.sabomanq.currencyservice.dao.ExchangeRatesDAO;
 import com.sabomanq.currencyservice.dao.SqliteProvider;
 import com.sabomanq.currencyservice.model.Parsing;
 import com.sabomanq.currencyservice.model.dto.Error;
 import com.sabomanq.currencyservice.model.dto.ExchangeRateSumDTO;
-import com.sabomanq.currencyservice.model.form.ExchangeTransactionForm;
 import com.sabomanq.currencyservice.service.ExchangeCalculator;
 
 import javax.servlet.annotation.WebServlet;
@@ -38,6 +38,6 @@ public class ExchangeCalcServlet extends HttpServlet {
 
     @Override
     public void init() {
-        this.calculator = new ExchangeCalculator(new ExchangeRatesDAO(new SqliteProvider()));
+        this.calculator = new ExchangeCalculator(new ExchangeRatesDAO(new SqliteProvider()), new CurrencyDb(new SqliteProvider()));
     }
 }

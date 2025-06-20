@@ -15,7 +15,7 @@ import java.util.Map;
 public class Parsing {
     public static CurrencyForm getPostCurrency(HttpServletRequest req) throws IllegalArgumentException {
         if (!isForm(req)) {
-            throw new IllegalArgumentException("Invalid request");
+            throw new IllegalArgumentException("Invalid request. Not a form");
         }
 
         Map<String, String[]> map = req.getParameterMap();
@@ -58,12 +58,12 @@ public class Parsing {
         }
 
         Map<String, String[]> map = req.getParameterMap();
-        if (!map.containsKey("baseCode") || !map.containsKey("targetCode") || !map.containsKey("rate"))  {
+        if (!map.containsKey("baseCurrencyCode") || !map.containsKey("targetCurrencyCode") || !map.containsKey("rate"))  {
             throw new IllegalArgumentException("Required form field is missing.");
         }
 
-        String baseCode = req.getParameter("baseCode");
-        String targetCode = req.getParameter("targetCode");
+        String baseCode = req.getParameter("baseCurrencyCode");
+        String targetCode = req.getParameter("targetCurrencyCode");
         float rate = Float.parseFloat(req.getParameter("rate"));
 
         return new ExchangeListForm(baseCode, targetCode, rate);
@@ -83,7 +83,7 @@ public class Parsing {
 
 
     private static boolean isForm(HttpServletRequest req) {
-        if (req.getContentType() != null && req.getContentType().equals("application/x-www-form-urlencoded")) {
+        if (req.getContentType() != null && req.getContentType().startsWith("application/x-www-form-urlencoded")) {
             return true;
         }
         return false;

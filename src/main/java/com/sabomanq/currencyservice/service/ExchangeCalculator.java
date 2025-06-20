@@ -1,9 +1,11 @@
 package com.sabomanq.currencyservice.service;
 
+import com.sabomanq.currencyservice.dao.Database;
 import com.sabomanq.currencyservice.dao.DatabaseError;
 import com.sabomanq.currencyservice.dao.ExchangeRatesDAO;
 import com.sabomanq.currencyservice.dao.NotFoundException;
 import com.sabomanq.currencyservice.model.dto.ExchangeRateSumDTO;
+import com.sabomanq.currencyservice.model.entity.Currency;
 import com.sabomanq.currencyservice.model.entity.ExchangeRate;
 import com.sabomanq.currencyservice.model.form.ExchangeTransactionForm;
 
@@ -13,9 +15,11 @@ import java.util.Optional;
 
 public class ExchangeCalculator {
     private ExchangeRatesDAO ratesDAO;
+    private Database currenciesDAO;
 
-    public ExchangeCalculator(ExchangeRatesDAO ratesDAO) {
+    public ExchangeCalculator(ExchangeRatesDAO ratesDAO, Database currenciesDAO) {
         this.ratesDAO = ratesDAO;
+        this.currenciesDAO = currenciesDAO;
     }
 
     public ExchangeRateSumDTO calculateExchangeSum(ExchangeTransactionForm form) throws NotFoundException, DatabaseError {
@@ -27,24 +31,28 @@ public class ExchangeCalculator {
         Optional<ExchangeRate> rate = ratesDAO.getExchangeRate(form.baseCurrency + form.targetCurrency);
         if (rate.isPresent()) {
             BigDecimal convertedAmount = rate.get().rate.multiply(form.amount);
-            ExchangeRateSumDTO result = new ExchangeRateSumDTO(rate.get(), form.amount, convertedAmount);
-            return result;
+            return new ExchangeRateSumDTO(rate.get(), form.amount, convertedAmount);
         } else if ((rate = ratesDAO.getExchangeRate(form.targetCurrency + form.baseCurrency)).isPresent()){
-            BigDecimal one = BigDecimal.ONE;
-            BigDecimal rateValue = rate.get().rate;
-            BigDecimal amount = form.amount;
-
-            BigDecimal convertedAmount = one.divide(rateValue, 10, RoundingMode.HALF_UP)
-                    .multiply(amount);
-            ExchangeRateSumDTO result = new ExchangeRateSumDTO(rate.get(), form.amount, convertedAmount);
-            return result;
+            rate.get().invert();
+            BigDecimal convertedAmount = rate.get().rate
+                    .multiply(form.amount);
+            return new ExchangeRateSumDTO(rate.get(), form.amount, convertedAmount);
         } else {
             Optional<ExchangeRate> usdBase = ratesDAO.getExchangeRate("USD" + form.baseCurrency);
             Optional<ExchangeRate> usdTarget = ratesDAO.getExchangeRate("USD" + form.targetCurrency);
             if (usdBase.isPresent() && usdTarget.isPresent()) {
-                BigDecimal convertedAmount = ((usdTarget.get().rate.divide(usdBase.get().rate)).multiply(form.amount));
-                ExchangeRateSumDTO result = new ExchangeRateSumDTO(rate.get(), form.amount, convertedAmount);
-                return result;
+                Currency base = currenciesDAO.getCurrency(form.baseCurrency);
+                Currency target = currenciesDAO.getCurrency(form.targetCurrency);
+
+                System.out.println("USD-A: " + usdBase.get().rate);
+                System.out.println("USD-B: " + usdTarget.get().rate);
+
+                ExchangeRate crossRate = new ExchangeRate(0, base, target,
+                                        (((usdTarget.get().rate).setScale(2, RoundingMode.DOWN).
+                                                divide(usdBase.get().rate, RoundingMode.DOWN))));
+                System.out.println("CROSS_RATE: " + crossRate.rate);
+                BigDecimal convertedAmount = crossRate.rate.multiply(form.amount);
+                return new ExchangeRateSumDTO(crossRate, form.amount, convertedAmount);
             } else {
                 throw new NotFoundException("No exchange rate found");
             }

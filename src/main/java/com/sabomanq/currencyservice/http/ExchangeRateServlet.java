@@ -36,13 +36,14 @@ public class ExchangeRateServlet extends HttpServlet {
         }
 
         try {
-            Optional<ExchangeRate> result = rates.getExchangeRate(pair);
-            if (!result.isPresent()) {
+            Optional<ExchangeRate> rate = rates.getExchangeRate(pair);
+            if (rate.isEmpty()) {
                 response.setStatus(HttpServletResponse.SC_NOT_FOUND);
                 Util.printToJs(new Error("Exchange pair not found."), response);
                 return;
             }
-            ExchangeRateDTO output = ExchangeRateMapper.INSTANCE.toDto(result.get());
+
+            ExchangeRateDTO output = ExchangeRateMapper.INSTANCE.toDto(rate.get());
             response.setStatus(HttpServletResponse.SC_OK);
             Util.printToJs(output, response);
         } catch (DatabaseError err) {
@@ -53,13 +54,13 @@ public class ExchangeRateServlet extends HttpServlet {
 
     public void doPatch(HttpServletRequest request, HttpServletResponse response) throws IOException {
         try {
-            String pathInfo = request.getPathInfo(); // вернёт "/USD"
-            String exchangePair = pathInfo.substring(1); // удаляем начальный "/"
+            String pathInfo = request.getPathInfo();
+            String exchangePair = pathInfo.substring(1);
             ExchangeRateForm form = Parsing.getExchangeRateForm(request);
 
-            ExchangeRateDTO result = ExchangeRateMapper.INSTANCE.toDto(rates.updateExchangeRate(exchangePair, form));
+            ExchangeRateDTO updatedRate = ExchangeRateMapper.INSTANCE.toDto(rates.updateExchangeRate(exchangePair, form));
             response.setStatus(HttpServletResponse.SC_OK);
-            Util.printToJs(result, response);
+            Util.printToJs(updatedRate, response);
         } catch (NotFoundException err) {
             response.setStatus(HttpServletResponse.SC_NOT_FOUND);
             Util.printToJs(new Error(err.getMessage()), response);

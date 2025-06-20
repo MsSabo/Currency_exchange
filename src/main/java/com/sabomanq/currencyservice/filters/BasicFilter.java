@@ -16,6 +16,11 @@ public class BasicFilter implements Filter {
         HttpServletResponse res = (HttpServletResponse) response;
         response.setContentType("application/json");
         response.setCharacterEncoding("UTF-8");
+
+        res.setHeader("Access-Control-Allow-Origin", "https://72a8-185-53-231-224.ngrok-free.app"); // или указать конкретный origin
+        res.setHeader("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, PATCH, OPTIONS");
+        res.setHeader("Access-Control-Allow-Headers", "Content-Type, Authorization");
+        res.setHeader("Access-Control-Max-Age", "3600");
         chain.doFilter(request, response);
         int status = res.getStatus(); // Получаем статус после обработки
         System.out.println("HTTP status: " + status);

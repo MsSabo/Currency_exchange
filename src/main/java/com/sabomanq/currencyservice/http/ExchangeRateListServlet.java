@@ -9,6 +9,7 @@ import com.sabomanq.currencyservice.model.dto.ExchangeRateDTO;
 import com.sabomanq.currencyservice.model.entity.ExchangeRate;
 import com.sabomanq.currencyservice.model.form.ExchangeListForm;
 import com.sabomanq.currencyservice.model.Parsing;
+import com.sabomanq.currencyservice.model.mapper.ExchangeRateMapper;
 import com.sabomanq.currencyservice.service.ExchangeRates;
 
 import javax.servlet.annotation.WebServlet;
@@ -37,9 +38,9 @@ public class ExchangeRateListServlet extends HttpServlet {
     public void doPost(HttpServletRequest req, HttpServletResponse response) throws IOException {
         try {
             ExchangeListForm data = Parsing.getExchangePost(req);
-            ExchangeRate result = exchangeRate.addExchangeRate(data);
-            //ExchangeRateDTO output = new ExchangeRateDTO(result.id, result.baseCurrency, result.targetCurrency, result.rate);
-            Util.printToJs(result, response);
+            ExchangeRate newRate = exchangeRate.addExchangeRate(data);
+            ExchangeRateDTO output = ExchangeRateMapper.INSTANCE.toDto(newRate);
+            Util.printToJs(output, response);
         } catch (UniqueConstraintViolationException err) {
             response.setStatus(HttpServletResponse.SC_CONFLICT);
             Util.printToJs(new Error(err.getMessage()), response);
