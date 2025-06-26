@@ -1,14 +1,16 @@
-package com.sabomanq.currencyservice.http;
+package com.sabomanq.currencyservice.http.exchange;
 
 import com.sabomanq.currencyservice.dao.DatabaseError;
 import com.sabomanq.currencyservice.dao.ExchangeRatesDAO;
 import com.sabomanq.currencyservice.dao.SqliteProvider;
 import com.sabomanq.currencyservice.dao.UniqueConstraintViolationException;
-import com.sabomanq.currencyservice.model.dto.Error;
+import com.sabomanq.currencyservice.http.BadRequest;
+import com.sabomanq.currencyservice.http.Util;
+import com.sabomanq.currencyservice.model.dto.ErrorDTO;
 import com.sabomanq.currencyservice.model.dto.ExchangeRateDTO;
 import com.sabomanq.currencyservice.model.entity.ExchangeRate;
 import com.sabomanq.currencyservice.model.form.ExchangeListForm;
-import com.sabomanq.currencyservice.model.Parsing;
+import com.sabomanq.currencyservice.http.RequestParser;
 import com.sabomanq.currencyservice.model.mapper.ExchangeRateMapper;
 import com.sabomanq.currencyservice.service.ExchangeRates;
 
@@ -30,26 +32,26 @@ public class ExchangeRateListServlet extends HttpServlet {
             response.setStatus(HttpServletResponse.SC_OK);
         } catch (Exception err) {
             response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
-            Util.printToJs(new Error(err.getMessage()), response);
+            Util.printToJs(new ErrorDTO(err.getMessage()), response);
         }
     }
 
     @Override
     public void doPost(HttpServletRequest req, HttpServletResponse response) throws IOException {
         try {
-            ExchangeListForm data = Parsing.getExchangePost(req);
+            ExchangeListForm data = RequestParser.getExchangePost(req);
             ExchangeRate newRate = exchangeRate.addExchangeRate(data);
             ExchangeRateDTO output = ExchangeRateMapper.INSTANCE.toDto(newRate);
             Util.printToJs(output, response);
+        } catch (BadRequest err) {
+            response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
+            Util.printToJs(new ErrorDTO(err.getMessage()), response);
         } catch (UniqueConstraintViolationException err) {
             response.setStatus(HttpServletResponse.SC_CONFLICT);
-            Util.printToJs(new Error(err.getMessage()), response);
-        } catch (IllegalArgumentException err) {
-            response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
-            Util.printToJs(new Error(err.getMessage()), response);
-        } catch (DatabaseError err) {
+            Util.printToJs(new ErrorDTO(err.getMessage()), response);
+        }  catch (DatabaseError err) {
             response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
-            Util.printToJs(new Error(err.getMessage()), response);
+            Util.printToJs(new ErrorDTO(err.getMessage()), response);
         }
     }
 

@@ -1,5 +1,7 @@
 package com.sabomanq.currencyservice.model.form;
 
+import java.math.BigDecimal;
+
 ///  for post rate
 public class ExchangeListForm extends ExchangeRateForm {
     public String baseCode;

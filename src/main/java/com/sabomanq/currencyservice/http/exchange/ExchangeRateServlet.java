@@ -1,11 +1,13 @@
-package com.sabomanq.currencyservice.http;
+package com.sabomanq.currencyservice.http.exchange;
 
 import com.sabomanq.currencyservice.dao.DatabaseError;
 import com.sabomanq.currencyservice.dao.ExchangeRatesDAO;
 import com.sabomanq.currencyservice.dao.NotFoundException;
 import com.sabomanq.currencyservice.dao.SqliteProvider;
-import com.sabomanq.currencyservice.model.Parsing;
-import com.sabomanq.currencyservice.model.dto.Error;
+import com.sabomanq.currencyservice.http.BadRequest;
+import com.sabomanq.currencyservice.http.Util;
+import com.sabomanq.currencyservice.http.RequestParser;
+import com.sabomanq.currencyservice.model.dto.ErrorDTO;
 import com.sabomanq.currencyservice.model.dto.ExchangeRateDTO;
 import com.sabomanq.currencyservice.model.entity.ExchangeRate;
 import com.sabomanq.currencyservice.model.form.ExchangeRateForm;
@@ -31,7 +33,7 @@ public class ExchangeRateServlet extends HttpServlet {
 
         if (pair.isEmpty()) {
             response.setStatus(HttpServletResponse.SC_NOT_FOUND);
-            Util.printToJs(new Error("The currency pair codes are missing from the address."), response);
+            Util.printToJs(new ErrorDTO("The currency pair codes are missing from the address."), response);
             return;
         }
 
@@ -39,7 +41,7 @@ public class ExchangeRateServlet extends HttpServlet {
             Optional<ExchangeRate> rate = rates.getExchangeRate(pair);
             if (rate.isEmpty()) {
                 response.setStatus(HttpServletResponse.SC_NOT_FOUND);
-                Util.printToJs(new Error("Exchange pair not found."), response);
+                Util.printToJs(new ErrorDTO("Exchange pair not found."), response);
                 return;
             }
 
@@ -48,7 +50,7 @@ public class ExchangeRateServlet extends HttpServlet {
             Util.printToJs(output, response);
         } catch (DatabaseError err) {
             response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
-            Util.printToJs(new Error(err.getMessage()), response);
+            Util.printToJs(new ErrorDTO(err.getMessage()), response);
         }
     }
 
@@ -56,20 +58,20 @@ public class ExchangeRateServlet extends HttpServlet {
         try {
             String pathInfo = request.getPathInfo();
             String exchangePair = pathInfo.substring(1);
-            ExchangeRateForm form = Parsing.getExchangeRateForm(request);
+            ExchangeRateForm form = RequestParser.getExchangeRateForm(request);
 
             ExchangeRateDTO updatedRate = ExchangeRateMapper.INSTANCE.toDto(rates.updateExchangeRate(exchangePair, form));
             response.setStatus(HttpServletResponse.SC_OK);
             Util.printToJs(updatedRate, response);
         } catch (NotFoundException err) {
             response.setStatus(HttpServletResponse.SC_NOT_FOUND);
-            Util.printToJs(new Error(err.getMessage()), response);
+            Util.printToJs(new ErrorDTO(err.getMessage()), response);
         } catch (DatabaseError err) {
             response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
-            Util.printToJs(new Error(err.getMessage()), response);
-        } catch (IllegalArgumentException err) {
+            Util.printToJs(new ErrorDTO(err.getMessage()), response);
+        } catch (BadRequest err) {
             response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
-            Util.printToJs(new Error(err.getMessage()), response);
+            Util.printToJs(new ErrorDTO(err.getMessage()), response);
         }
     }
 

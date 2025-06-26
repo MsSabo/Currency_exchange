@@ -1,9 +1,9 @@
 package com.sabomanq.currencyservice.model.dto;
 
-public class Error {
+public class ErrorDTO {
     public String message;
 
-    public Error(String error) {
+    public ErrorDTO(String error) {
         this.message = error;
     }
 }

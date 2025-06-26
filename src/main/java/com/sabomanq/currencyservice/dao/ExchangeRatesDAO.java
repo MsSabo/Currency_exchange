@@ -9,7 +9,7 @@ import java.util.ArrayList;
 import java.util.Optional;
 
 public class ExchangeRatesDAO {
-    private ConnectionProvider connectionProvider;
+    private final ConnectionProvider connectionProvider;
 
     public ExchangeRatesDAO(ConnectionProvider connectionProvider) {
         this.connectionProvider = connectionProvider;
@@ -63,7 +63,7 @@ public class ExchangeRatesDAO {
         }
     }
 
-    public Optional<ExchangeRate> getExchangeRate(String base, String target) {
+    public Optional<ExchangeRate> getExchangeRate(String base, String target) throws DatabaseError {
         return getExchangeRate(base + target);
     }
 

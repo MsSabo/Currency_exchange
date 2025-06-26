@@ -1,6 +1,7 @@
 package com.sabomanq.currencyservice.service;
 
 import com.sabomanq.currencyservice.dao.ExchangeRatesDAO;
+import com.sabomanq.currencyservice.dao.NotFoundException;
 import com.sabomanq.currencyservice.model.entity.ExchangeRate;
 import com.sabomanq.currencyservice.model.form.ExchangeListForm;
 import com.sabomanq.currencyservice.model.form.ExchangeRateForm;
@@ -27,7 +28,7 @@ public class ExchangeRates {
         return exchangeRatesDAO.addRate(data.baseCode, data.targetCode, data.rate);
     }
 
-    public ExchangeRate updateExchangeRate(String pair, ExchangeRateForm data) {
+    public ExchangeRate updateExchangeRate(String pair, ExchangeRateForm data) throws NotFoundException {
         return exchangeRatesDAO.patchRate(pair, data.rate);
     }
 

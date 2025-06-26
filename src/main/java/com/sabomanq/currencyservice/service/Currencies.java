@@ -1,6 +1,7 @@
 package com.sabomanq.currencyservice.service;
 
 import com.sabomanq.currencyservice.dao.Database;
+import com.sabomanq.currencyservice.dao.NotFoundException;
 import com.sabomanq.currencyservice.model.dto.CurrencyDTO;
 import com.sabomanq.currencyservice.model.entity.Currency;
 import com.sabomanq.currencyservice.model.form.CurrencyForm;
@@ -16,7 +17,7 @@ public class Currencies {
         this.database = database;
     }
 
-    public CurrencyDTO getCurrency(String code) {
+    public CurrencyDTO getCurrency(String code) throws NotFoundException {
         synchronized (database) {
             System.out.println("getCurrency");
             Currency result = database.getCurrency(code);

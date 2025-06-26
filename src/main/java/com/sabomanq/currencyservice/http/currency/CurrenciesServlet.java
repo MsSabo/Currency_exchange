@@ -1,10 +1,11 @@
-package com.sabomanq.currencyservice.http;
+package com.sabomanq.currencyservice.http.currency;
 
 import com.sabomanq.currencyservice.dao.*;
+import com.sabomanq.currencyservice.http.Util;
 import com.sabomanq.currencyservice.model.dto.CurrencyDTO;
-import com.sabomanq.currencyservice.model.dto.Error;
+import com.sabomanq.currencyservice.model.dto.ErrorDTO;
 import com.sabomanq.currencyservice.model.form.CurrencyForm;
-import com.sabomanq.currencyservice.model.Parsing;
+import com.sabomanq.currencyservice.http.RequestParser;
 import com.sabomanq.currencyservice.service.Currencies;
 
 import java.io.*;
@@ -29,29 +30,29 @@ public class CurrenciesServlet extends HttpServlet {
             Util.printToJs(result, response);
         } catch (DatabaseError e) {
             response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
-            Util.printToJs(new Error("Internal error"), response);
+            Util.printToJs(new ErrorDTO("Internal error"), response);
         } catch (IOException err) {
             response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
-            Util.printToJs(new Error("Internal error"), response);
+            Util.printToJs(new ErrorDTO("Internal error"), response);
         }
     }
 
     @Override
     public void doPost(HttpServletRequest request, HttpServletResponse response) throws IOException {
         try {
-            CurrencyForm data = Parsing.getPostCurrency(request);
+            CurrencyForm data = RequestParser.getPostCurrency(request);
             CurrencyDTO addedData = currencies.add(data);
             response.setStatus(HttpServletResponse.SC_CREATED);
             Util.printToJs(addedData, response);
         } catch (UniqueConstraintViolationException e) {
             response.setStatus(HttpServletResponse.SC_CONFLICT);
-            Util.printToJs(new Error("Currency already exists."), response);
+            Util.printToJs(new ErrorDTO("Currency already exists."), response);
         } catch (DatabaseError err) {
             response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
-            Util.printToJs(new Error("Internal server error"), response);
-        } catch (IllegalArgumentException err) {
+            Util.printToJs(new ErrorDTO("Internal server error"), response);
+        } catch (RuntimeException err) {
             response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
-            Util.printToJs(new Error(err.getMessage()), response);
+            Util.printToJs(new ErrorDTO(err.getMessage()), response);
         }
     }
 }
